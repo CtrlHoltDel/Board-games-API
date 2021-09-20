@@ -29,7 +29,7 @@ exports.fillTables = async ({
 
     const commentsQuery = format(
         `INSERT INTO comments
-        (body, votes, author, article_id, created_at )
+        (body, votes, author, review_id, created_at )
         VALUES %L`,
         objectToArray(commentData)
     );

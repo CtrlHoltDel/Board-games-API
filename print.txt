@@ -1,4 +1,4 @@
-You are now connected to database "nc_games" as user "ctrlholtdel".
+You are now connected to database "nc_games_test" as user "ctrlholtdel".
 
  categories 
 
@@ -56,16 +56,5 @@ You are now connected to database "nc_games" as user "ctrlholtdel".
           4 | bainesface      |          2 |    16 | 2017-11-22 12:36:03.389 | EPIC board game!
           5 | mallionaire     |          2 |    13 | 2021-01-18 10:24:05.41  | Now this is a story all about how, board games turned my life upside down
           6 | philippaclaire9 |          3 |    10 | 2021-03-27 19:49:48.11  | Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite
-(6 rows)
-
-                     List of relations
- Schema |          Name           |   Type   |    Owner    
---------+-------------------------+----------+-------------
- public | categories              | table    | ctrlholtdel
- public | comments                | table    | ctrlholtdel
- public | comments_comment_id_seq | sequence | ctrlholtdel
- public | reviews                 | table    | ctrlholtdel
- public | reviews_review_id_seq   | sequence | ctrlholtdel
- public | users                   | table    | ctrlholtdel
 (6 rows)
 

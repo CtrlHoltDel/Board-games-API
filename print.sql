@@ -1,4 +1,4 @@
-\c nc_games;
+\c nc_games_test;
 
 -- DROP TABLE IF EXISTS comments;
 -- DROP TABLE IF EXISTS reviews;
@@ -15,5 +15,3 @@ SELECT * FROM reviews;
 \echo '\n comments \n\n'
 SELECT * FROM comments;
 
-
-\d

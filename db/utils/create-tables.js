@@ -32,10 +32,10 @@ exports.createTables = async () => {
     const commentsTable = `CREATE TABLE comments (
         comment_id SERIAL PRIMARY KEY,
         author VARCHAR REFERENCES users(username),
-        article_id INT REFERENCES reviews(review_id),
+        review_id INT REFERENCES reviews(review_id),
         votes INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        body VARCHAR(255)
+        body VARCHAR(1000)
     );
     `;
 
