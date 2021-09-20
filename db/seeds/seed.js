@@ -1,4 +1,3 @@
-const db = require('../connection');
 const { dropTables, createTables } = require('../utils/create-tables');
 const { fillTables } = require('../utils/fill-tables');
 

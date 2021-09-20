@@ -1,4 +1,13 @@
-const testData = require('./db/data/test-data');
-const seed = require('./db/seeds/seed');
+const express = require('express');
+const { missingPath } = require('./errors/errors');
+const apiRouter = require('./routers/api.routers');
 
-seed(testData);
+const app = express();
+
+app.use(express.json());
+
+app.use('/api', apiRouter);
+
+app.all('/*', missingPath);
+
+module.exports = app;

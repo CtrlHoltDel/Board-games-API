@@ -6,8 +6,6 @@ exports.dropTables = async () => {
     for (let i = 0; i < tables.length; i++) {
         await db.query(`DROP TABLE IF EXISTS ${tables[i]};`);
     }
-
-    console.log('tables dropped');
 };
 
 exports.createTables = async () => {
@@ -46,6 +44,4 @@ exports.createTables = async () => {
     for (let i = 0; i < tables.length; i++) {
         await db.query(tables[i]);
     }
-
-    console.log('tables created');
 };
