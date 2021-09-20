@@ -4,6 +4,7 @@
   "description": "bc-nc-games",
   "main": "index.js",
   "scripts": {
+    "print": "psql -f ./print.sql > ./print.txt",
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./db/seeds/run-seed.js",
     "test": "jest"
@@ -19,6 +20,14 @@
     "url": "https://github.com/northcoders/be-nc-games/issues"
   },
   "homepage": "https://github.com/northcoders/be-nc-games#readme",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "pg": "^8.7.1",
+    "pg-format": "^1.0.4"
+  },
+  "devDependencies": {
+    "jest": "^27.2.0",
+    "supertest": "^6.1.6"
+  }
 }
