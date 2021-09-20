@@ -9,7 +9,7 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe('Missing path', () => {
-    it("404: When given a path that doesn'nt exist, returns an error.", () => {
+    it("404: When given a path that doesn't exist, returns an error.", () => {
         return request(app)
             .get('/broken_link')
             .expect(404)
@@ -31,6 +31,39 @@ describe('/api/categories', () => {
                         description: expect.any(String),
                         slug: expect.any(String),
                     });
+                });
+            });
+    });
+});
+
+describe('/api/reviews/:id', () => {
+    it("400: When the parametric endpoint isn't a number - returns an error", () => {
+        return request(app)
+            .get('/api/reviews/not_a_number')
+            .expect(400)
+            .then((response) => {
+                expect(response.body.error).toEqual({
+                    status: 400,
+                    endpoint: '/api/reviews/:id',
+                    error: 'id must be a number',
+                });
+            });
+    });
+
+    it('200: Returns a review object with the correct properties', () => {
+        return request(app)
+            .get('/api/reviews/2')
+            .expect(200)
+            .then((response) => {
+                expect(response.body.review).toMatchObject({
+                    title: expect.any(String),
+                    review_id: expect.any(Number),
+                    review_body: expect.any(String),
+                    designer: expect.any(String),
+                    review_img_url: expect.any(String),
+                    category: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
                 });
             });
     });
