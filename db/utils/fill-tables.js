@@ -1,5 +1,6 @@
 const db = require('../connection');
 const format = require('pg-format');
+const { objectToArray } = require('./data-manipulation');
 
 exports.fillTables = async ({
     categoryData,
@@ -7,73 +8,30 @@ exports.fillTables = async ({
     reviewData,
     userData,
 }) => {
-    const categoryArray = categoryData.map(({ slug, description }) => [
-        slug,
-        description,
-    ]);
-
-    const usersArray = userData.map(({ username, name, avatar_url }) => [
-        username,
-        avatar_url,
-        name,
-    ]);
-
-    const reviewsArray = reviewData.map(
-        ({
-            title,
-            designer,
-            owner,
-            review_img_url,
-            review_body,
-            category,
-            created_at,
-            votes,
-        }) => [
-            title,
-            review_body,
-            designer,
-            review_img_url,
-            votes,
-            category,
-            owner,
-            created_at,
-        ]
-    );
-
-    const commentsArray = commentData.map(
-        ({ body, votes, author, review_id, created_at }) => [
-            author,
-            review_id,
-            votes,
-            created_at,
-            body,
-        ]
-    );
-
     const categoryQuery = format(
         `INSERT INTO categories (slug, description)
          VALUES %L `,
-        categoryArray
+        objectToArray(categoryData)
     );
 
     const usersQuery = format(
         `INSERT INTO users (username, avatar_url, name) 
          VALUES %L;`,
-        usersArray
+        objectToArray(userData)
     );
 
     const reviewsQuery = format(
         `INSERT INTO reviews 
-        (title, review_body, designer, review_img_url, votes, category, owner, created_at)
+        (title, designer, owner, review_img_url, review_body, category, created_at, votes)
         VALUES %L;`,
-        reviewsArray
+        objectToArray(reviewData)
     );
 
     const commentsQuery = format(
         `INSERT INTO comments
-        (author, article_id, votes, created_at,  body)
+        (body, votes, author, article_id, created_at )
         VALUES %L`,
-        commentsArray
+        objectToArray(commentData)
     );
 
     await db.query(categoryQuery);
