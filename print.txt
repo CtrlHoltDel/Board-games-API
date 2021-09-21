@@ -1,11 +1,1 @@
 You are now connected to database "nc_games_test" as user "ctrlholtdel".
- comment_id |     author      | review_id | votes |       created_at        |                                                       body                                                       
-------------+-----------------+-----------+-------+-------------------------+------------------------------------------------------------------------------------------------------------------
-          1 | bainesface      |         2 |    16 | 2017-11-22 12:43:33.389 | I loved this game too!
-          2 | mallionaire     |         3 |    13 | 2021-01-18 10:09:05.41  | My dog loved this game too!
-          3 | philippaclaire9 |         3 |    10 | 2021-01-18 10:09:48.11  | I didn't know dogs could play games
-          4 | bainesface      |         2 |    16 | 2017-11-22 12:36:03.389 | EPIC board game!
-          5 | mallionaire     |         2 |    13 | 2021-01-18 10:24:05.41  | Now this is a story all about how, board games turned my life upside down
-          6 | philippaclaire9 |         3 |    10 | 2021-03-27 19:49:48.11  | Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite
-(6 rows)
-

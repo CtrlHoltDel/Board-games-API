@@ -3,8 +3,8 @@ exports.missingPath = (req, res, next) => {
 };
 
 exports.error400 = (error, req, res, next) => {
-    if (error.status === 400) {
-        res.status(400).send({ error });
+    if (error.status === 400 || error.status === 404) {
+        res.status(error.status).send({ error });
     } else {
         next();
     }

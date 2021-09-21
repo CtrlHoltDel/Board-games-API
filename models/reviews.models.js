@@ -27,14 +27,8 @@ exports.updateVoteById = async (id, input) => {
     if (!Number(id)) {
         return rejPromise(400, '/api/reviews/:id', 'id must be a number');
     }
-    if (!formatCheckVote(input)) {
-        return rejPromise(
-            400,
-            '/api/reviews/:id',
-            'format to { inc_votes : number }'
-        );
-    }
 
+    await formatCheckVote(input);
     const query = `
     UPDATE reviews
     SET votes = votes + ${input.inc_votes}
@@ -47,14 +41,16 @@ exports.updateVoteById = async (id, input) => {
 };
 
 exports.fetchAllReviews = async (queries) => {
-    let ORDER = '';
+    let ORDER = ` ORDER BY reviews.review_id desc`;
     let WHERE = '';
 
-    if (!fetchAllReviewsValidate(queries)) {
-        return rejPromise(400, '/api/reviews?category=query', {
-            valid_queries: ['sort_by', 'order', 'category'],
-        });
-    }
+    // if (!fetchAllReviewsValidate(queries)) {
+    //     return rejPromise(400, '/api/reviews?category=query', {
+    //         valid_queries: ['sort_by', 'order', 'category'],
+    //     });
+    // }
+
+    await fetchAllReviewsValidate(queries);
 
     if (queries.order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
 
@@ -73,5 +69,12 @@ exports.fetchAllReviews = async (queries) => {
     ;`;
 
     const reviews = await db.query(query_body);
+
+    if (reviews.rows.length === 0) {
+        return rejPromise(404, '/api/reviews?category=query', 'Not found');
+    }
+
+    // console.log(reviews.rows);
+
     return reviews.rows;
 };

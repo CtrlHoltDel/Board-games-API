@@ -1,5 +1,8 @@
 const { objectToArray } = require('../db/utils/data-manipulation');
-const { fetchAllReviewsValidate } = require('../utils/validation');
+const {
+    fetchAllReviewsValidate,
+    formatCheckVote,
+} = require('../utils/validation');
 
 describe('Seed tests', () => {
     it('converts array of objects to be pg-format friendly', () => {
@@ -26,20 +29,43 @@ describe('Seed tests', () => {
 });
 
 describe('Validation', () => {
+    describe('formatCheckVote', () => {
+        it('Returns a rejected promise if passed an invalid vote', () => {
+            return expect(formatCheckVote({ in_votes: 1 })).rejects.toEqual({
+                status: 400,
+                endpoint: '/api/reviews/:id',
+                error: 'format to { inc_votes : number }',
+            });
+        });
+        it('Returns undefined when passed a valid vote', () => {
+            return expect(formatCheckVote({ inc_votes: 5 })).toBe(undefined);
+        });
+    });
     describe('Fetch all reviews', () => {
-        it('When passed a valid keyname and value returns true', () => {
-            expect(fetchAllReviewsValidate({ category: 'cars' })).toBe(true);
+        const rejectedPromise = {
+            endpoint: '/api/reviews?category=query',
+            error: {
+                valid_queries: ['sort_by', 'order', 'category'],
+            },
+            status: 400,
+        };
+        it('When passed a valid key name and value returns undefined', () => {
+            expect(
+                fetchAllReviewsValidate({ category: 'cars' })
+            ).toBeUndefined();
         });
-        it('When passed a query with an invalid key name returns false', () => {
-            expect(fetchAllReviewsValidate({ invalid_key_name: 'cars' })).toBe(
-                false
-            );
+        it('When passed a query with an invalid key name returns a rejected Promise', () => {
+            expect(
+                fetchAllReviewsValidate({ invalid_key_name: 'cars' })
+            ).rejects.toEqual(rejectedPromise);
         });
         it("If passed the order keyword - returns false if the value isn't asc/desc", () => {
-            expect(fetchAllReviewsValidate({ order: 'asc' })).toBe(true);
+            expect(fetchAllReviewsValidate({ order: 'asc' })).toBeUndefined();
         });
         it("If passed the order keyword - returns false if the value isn't asc/desc", () => {
-            expect(fetchAllReviewsValidate({ order: 'not_any' })).toBe(false);
+            expect(
+                fetchAllReviewsValidate({ order: 'not_any' })
+            ).rejects.toEqual(rejectedPromise);
         });
     });
 });

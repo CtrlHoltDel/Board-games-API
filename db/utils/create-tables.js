@@ -27,14 +27,14 @@ exports.createTables = async () => {
         votes INT DEFAULT 0,
         category VARCHAR NOT NULL REFERENCES categories(slug),
         owner VARCHAR NOT NULL REFERENCES users(username),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at DATE NOT NULL
         );`;
     const commentsTable = `CREATE TABLE comments (
         comment_id SERIAL PRIMARY KEY,
         author VARCHAR REFERENCES users(username),
         review_id INT REFERENCES reviews(review_id),
         votes INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at DATE NOT NULL,
         body VARCHAR(1000)
     );
     `;
