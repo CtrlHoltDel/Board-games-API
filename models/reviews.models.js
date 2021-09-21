@@ -1,5 +1,4 @@
 const db = require('../db/connection');
-const { rejPromise } = require('../utils/utils');
 const {
     fetchAllReviewsValidate,
     formatCheckVote,
@@ -7,7 +6,11 @@ const {
 
 exports.fetchReviewById = async (id) => {
     if (!Number(id)) {
-        return rejPromise(400, '/api/reviews/:id', 'id must be a number');
+        return Promise.reject({
+            status: 400,
+            endpoint: '/api/reviews/:id',
+            error: 'id must be a number',
+        });
     }
 
     const query = `
@@ -25,7 +28,11 @@ exports.fetchReviewById = async (id) => {
 
 exports.updateVoteById = async (id, input) => {
     if (!Number(id)) {
-        return rejPromise(400, '/api/reviews/:id', 'id must be a number');
+        return Promise.reject({
+            status: 400,
+            endpoint: '/api/reviews/:id',
+            error: 'id must be a number',
+        });
     }
 
     await formatCheckVote(input);
@@ -71,10 +78,18 @@ exports.fetchAllReviews = async (queries) => {
     const reviews = await db.query(query_body);
 
     if (reviews.rows.length === 0) {
-        return rejPromise(404, '/api/reviews?category=query', 'Not found');
+        return Promise.reject({
+            status: 404,
+            endpoint: '/api/reviews?category=query',
+            error: 'Invalid query',
+        });
     }
 
-    // console.log(reviews.rows);
-
-    return reviews.rows;
+    return reviews.rows.length === 0
+        ? Promise.reject({
+              status: 404,
+              endpoint: '/api/reviews?category=query',
+              error: 'Invalid query',
+          })
+        : reviews.rows;
 };

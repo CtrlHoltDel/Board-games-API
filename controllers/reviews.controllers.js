@@ -32,7 +32,6 @@ exports.getReviewList = async (req, res, next) => {
         const reviews = await fetchAllReviews(req.query);
         res.status(200).send({ reviews });
     } catch (err) {
-        console.log(err);
         next(err);
     }
 };

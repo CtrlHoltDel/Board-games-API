@@ -111,7 +111,6 @@ describe('Reviews', () => {
         it('200: When passed with no queries, returns the full list of reviews with the correct keys', async () => {
             const res = await request(app).get('/api/reviews').expect(200);
             res.body.reviews.forEach((review) => {
-                // console.log(review);
                 expect(review).toMatchObject({
                     owner: expect.any(String),
                     title: expect.any(String),
@@ -156,7 +155,7 @@ describe('Reviews', () => {
             expect(res.body.error).toEqual({
                 status: 404,
                 endpoint: '/api/reviews?category=query',
-                error: 'Not found',
+                error: 'Invalid query',
             });
         });
         it("400: When passed a category that does'nt exist, returns an error", async () => {
