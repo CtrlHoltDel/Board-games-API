@@ -241,7 +241,7 @@ describe('Reviews/:review_id/comments', () => {
             error: 'id must be a number',
         });
     });
-    it('200: Returns a full list of filtered reviews when passed a valid id', async () => {
+    it('200: Returns a full list of filtered comments when passed a valid id', async () => {
         const res = await request(app)
             .get('/api/reviews/2/comments')
             .expect(200);
