@@ -9,6 +9,11 @@
 
 -- owner, title, review_id, category, review_img_url, created_at, votes, comment_count
 
+SELECT comment_id, votes, created_at, username, body FROM comments
+JOIN users
+ON users.username = comments.author
+WHERE review_id = 2;
+
 -- comment_count
 -- SELECT * FROM reviews;
 -- RIGHT JOIN comments
@@ -19,10 +24,6 @@
 -- ON comments.review_id = reviews.review_id
 -- WHERE category = 'social deduction'
 -- GROUP BY title, owner, reviews.review_id;
-
-
-SELECT created_at FROM reviews;
-
 
 
 -- \echo '\n categories \n\n'

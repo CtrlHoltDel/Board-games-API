@@ -55,6 +55,14 @@ describe('Reviews', () => {
                 error: 'id must be a number',
             });
         });
+        it("400: Returns an error if passed a number which doesn't relate to a review", async () => {
+            const res = await request(app).get('/api/reviews/3434').expect(400);
+            expect(res.body.error).toEqual({
+                status: 400,
+                error: 'No reviews with an id of 3434',
+                endpoint: '/api/reviews/:id',
+            });
+        });
     });
     describe('PATCH /api/reviews/:id', () => {
         it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
@@ -158,7 +166,7 @@ describe('Reviews', () => {
                 error: 'Invalid query',
             });
         });
-        it("400: When passed a category that doesn't exist, returns an error containing a list of valid categories.", async () => {
+        it("400: Returns an error with a list of valid categories when passed a category that doesn't exist.", async () => {
             const res = await request(app)
                 .get('/api/reviews?not_a_category=me_neither')
                 .expect(400);
@@ -218,5 +226,25 @@ describe('Reviews', () => {
                 },
             });
         });
+    });
+});
+
+describe('Reviews/:review_id/comments', () => {
+    it("400: Returns an error when passed an id that isn't a number", async () => {
+        const res = await request(app)
+            .get('/api/reviews/not_a_number/comments')
+            .expect(400);
+
+        expect(res.body.error).toEqual({
+            status: 400,
+            endpoint: '/api/reviews/:id',
+            error: 'id must be a number',
+        });
+    });
+    it('200: Returns a full list of filtered reviews when passed a valid id', async () => {
+        const res = await request(app)
+            .get('/api/reviews/2/comments')
+            .expect(200);
+        expect(res.body.reviews).toHaveLength(3);
     });
 });

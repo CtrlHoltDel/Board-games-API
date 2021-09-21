@@ -15,15 +15,21 @@ exports.fetchReviewById = async (id) => {
     }
 
     const query = `
-        SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) FROM users
-        JOIN reviews
-        ON users.username = reviews.owner
-        JOIN comments
-        ON comments.review_id = reviews.review_id
-        WHERE reviews.review_id = $1
-        GROUP BY username, title, reviews.review_id;`;
+    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) FROM users
+    JOIN reviews
+    ON users.username = reviews.owner
+    JOIN comments
+    ON comments.review_id = reviews.review_id
+    WHERE reviews.review_id = $1
+    GROUP BY username, title, reviews.review_id;`;
 
-    const result = await db.query(query, [...id]);
+    const result = await db.query(query, [id]);
+    if (!result.rows[0])
+        return Promise.reject({
+            status: 400,
+            error: `No reviews with an id of ${id}`,
+            endpoint: '/api/reviews/:id',
+        });
     return result.rows[0];
 };
 
@@ -92,4 +98,21 @@ exports.fetchAllReviews = async (queries) => {
               error: 'Invalid query',
           })
         : reviews.rows;
+};
+
+exports.fetchCommentsByReviewId = async (id) => {
+    if (!Number(id)) {
+        return Promise.reject({
+            status: 400,
+            endpoint: '/api/reviews/:id',
+            error: 'id must be a number',
+        });
+    }
+    const query_body = `
+                SELECT review_id, comment_id, votes, created_at, username, body FROM comments
+                JOIN users
+                ON users.username = comments.author
+                WHERE review_id = $1;`;
+    const result = await db.query(query_body, [id]);
+    return result.rows;
 };
