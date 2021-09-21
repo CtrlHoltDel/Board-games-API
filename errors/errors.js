@@ -12,7 +12,16 @@ exports.pgErrors = (error, req, res, next) => {
     if (error.code === '22P02') {
         res.status(400).send({ error: 'Error when accessing database' });
     } else if (error.code === '23503') {
-        res.status(400).send({ error: "User doesn't exist" });
+        let error_info;
+        let error_char = error.detail
+            .match(/=\([a-zA-Z0-9-]+\)/g)[0]
+            .slice(2, -1);
+
+        error_info = /users/g.test(error.detail)
+            ? `User [${error_char}] doesn't exist`
+            : `Review with the ID [${error_char}] doesn't exist`;
+
+        res.status(400).send({ error: error_info });
     } else {
         next(error);
     }

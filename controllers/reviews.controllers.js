@@ -23,7 +23,7 @@ exports.patchVoteById = async (req, res, next) => {
 
     try {
         const updated_review = await updateVoteById(id, body);
-        res.status(200).send({ updated_review });
+        res.status(201).send({ updated_review });
     } catch (err) {
         next(err);
     }
@@ -53,7 +53,7 @@ exports.postCommentByReview = async (req, res, next) => {
     const { id } = req.params;
     try {
         const comment = await addCommentToReview(id, body);
-        res.status(200).send({ comment });
+        res.status(201).send({ comment });
     } catch (err) {
         next(err);
     }

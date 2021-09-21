@@ -88,10 +88,10 @@ describe('Reviews', () => {
             });
         });
         describe('PATCH', () => {
-            it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
+            it('201: Returns the updated item after incrimenting/decrimenting the vote', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/2')
-                    .expect(200)
+                    .expect(201)
                     .send({ inc_votes: 5 });
                 expect(res.body.updated_review).toMatchObject({
                     review_id: expect.any(Number),
@@ -106,10 +106,10 @@ describe('Reviews', () => {
                 });
                 expect(res.body.updated_review.votes).toBe(10);
             });
-            it('200: Update also works with negative numbers', async () => {
+            it('201: Update also works with negative numbers', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/2')
-                    .expect(200)
+                    .expect(201)
                     .send({ inc_votes: -20 });
 
                 expect(res.body.updated_review.votes).toBe(-15);
@@ -305,13 +305,13 @@ describe('Reviews', () => {
 
                 expect(res.body.error).toEqual(errorObject);
             });
-            it('200: Returns the sent comment after adding it to the database', async () => {
+            it('201: Returns the sent comment after adding it to the database and adds it to the database.', async () => {
                 const res = await request(app)
                     .post('/api/reviews/2/comments')
-                    .expect(200)
+                    .expect(201)
                     .send({
                         username: 'bainesface',
-                        body: 'This is the body of the comment',
+                        body: 'Test comment. Not too interesting.',
                     });
 
                 expect(res.body.comment).toMatchObject({
@@ -322,6 +322,13 @@ describe('Reviews', () => {
                     created_at: expect.any(String),
                     body: expect.any(String),
                 });
+
+                const { rows } = await db.query(
+                    `SELECT * FROM comments WHERE body = 'Test comment. Not too interesting.';`
+                );
+
+                expect(rows.length).toBe(1);
+                expect(rows[0].body).toBe('Test comment. Not too interesting.');
             });
             it("400: Returns an error if passed a user that doesn'nt exist", async () => {
                 const res = await request(app)
@@ -331,7 +338,21 @@ describe('Reviews', () => {
                         username: 'non-existent-user',
                         body: "I'm not sure how i'm writing this comment. I don't exist",
                     });
-                expect(res.body.error).toEqual("User doesn't exist");
+                expect(res.body.error).toEqual(
+                    `User [non-existent-user] doesn't exist`
+                );
+            });
+            it("400: Returns an error if passed an ID that doesn't relate to a review", async () => {
+                const res = await request(app)
+                    .post('/api/reviews/23/comments')
+                    .expect(400)
+                    .send({
+                        username: 'bainesface',
+                        body: 'This is the body of the comment',
+                    });
+                expect(res.body.error).toEqual(
+                    "Review with the ID [23] doesn't exist"
+                );
             });
         });
     });
