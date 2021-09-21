@@ -56,7 +56,7 @@ exports.fetchAllReviews = async (queries) => {
 
     await validate.allReviews(queries);
 
-    if (queries.sort_by !== undefined) {
+    if (queries.sort_by) {
         let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
         await validate.sortBy(column);
         ORDER = ` ORDER BY ${column} ASC`;
@@ -77,14 +77,6 @@ exports.fetchAllReviews = async (queries) => {
     ${ORDER}
     ;`;
     const reviews = await db.query(queryBody);
-
-    if (reviews.rows.length === 0) {
-        return Promise.reject({
-            status: 404,
-            endpoint: '/api/reviews?category=query',
-            error: 'Invalid query',
-        });
-    }
 
     return reviews.rows.length === 0
         ? Promise.reject({

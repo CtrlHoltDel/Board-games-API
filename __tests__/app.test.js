@@ -8,10 +8,28 @@ const seed = require('../db/seeds/seed.js');
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
-describe('Missing path', () => {
-    it("404: When given a path that doesn't exist, returns an error.", async () => {
-        const res = await request(app).get('/broken_link').expect(404);
-        expect(res.body.error).toBe('route not found');
+describe('Misc', () => {
+    describe('Missing path', () => {
+        it("404: When given a path that doesn't exist, returns an error.", async () => {
+            const res = await request(app).get('/broken_link').expect(404);
+            expect(res.body.error).toBe('route not found');
+        });
+    });
+    describe('/api', () => {
+        it('200: Returns an object containing information about current endpoints', async () => {
+            const res = await request(app).get('/api').expect(200);
+            expect(res.body.endpoints).toEqual({
+                GET: [
+                    '/api',
+                    '/api/categories',
+                    '/api/reviews',
+                    '/api/reviews/:review_id',
+                    '/api/reviews/:review_id/comments',
+                ],
+                PATCH: ['/api/reviews/:review_id'],
+                POST: ['/api/reviews/:review_id/comments'],
+            });
+        });
     });
 });
 
