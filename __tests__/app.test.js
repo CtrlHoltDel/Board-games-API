@@ -17,7 +17,7 @@ describe('Missing path', () => {
 
 describe('Categories', () => {
     describe('/api/categories', () => {
-        it('200: Returns a list of all categories containing both the "slug" and "description" key', async () => {
+        it('200: Returns a list of all categories containing both the "slug" and "description" keys', async () => {
             const res = await request(app).get('/api/categories').expect(200);
             expect(res.body.categories).toHaveLength(4);
             res.body.categories.forEach((category) => {
@@ -45,7 +45,7 @@ describe('Reviews', () => {
                 votes: expect.any(Number),
             });
         });
-        it("400: When the parametric endpoint isn't a number - returns an error", async () => {
+        it('400: Returns an error if passed a non-number as a parametric endpoint', async () => {
             const res = await request(app)
                 .get('/api/reviews/not_a_number')
                 .expect(400);
@@ -57,7 +57,7 @@ describe('Reviews', () => {
         });
     });
     describe('PATCH /api/reviews/:id', () => {
-        it('200: Updates the votes and returns the updated item', async () => {
+        it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
             const res = await request(app)
                 .patch('/api/reviews/2')
                 .expect(200)
@@ -83,7 +83,7 @@ describe('Reviews', () => {
 
             expect(res.body.updated_review.votes).toBe(-15);
         });
-        it("400: When the id does'nt end with a number, returns an error.", async () => {
+        it("400: Returns an error if endpoint doesn't end in a number.", async () => {
             const res = await request(app)
                 .patch('/api/reviews/invalid_id')
                 .expect(400);
@@ -94,7 +94,7 @@ describe('Reviews', () => {
                 error: 'id must be a number',
             });
         });
-        it('400: When passed an incorrect object in the body - returns an error', async () => {
+        it('400: Returns an error if passed an invalid object in the body.', async () => {
             const res = await request(app)
                 .patch('/api/reviews/2')
                 .expect(400)
@@ -107,8 +107,8 @@ describe('Reviews', () => {
             });
         });
     });
-    describe.only('GET /api/reviews?queries=', () => {
-        it('200: When passed with no queries, returns the full list of reviews with the correct keys', async () => {
+    describe('GET /api/reviews?queries=', () => {
+        it('200: Returns a full list of reviews when passed no queries.', async () => {
             const res = await request(app).get('/api/reviews').expect(200);
             res.body.reviews.forEach((review) => {
                 expect(review).toMatchObject({
@@ -123,7 +123,7 @@ describe('Reviews', () => {
                 });
             });
         });
-        it('200: When passed with ASC/DESC order query - correctly orders the reviews by id', async () => {
+        it('200: Returns the list in ASC/DESC order when passed an order query', async () => {
             const resAsc = await request(app)
                 .get('/api/reviews?order=asc')
                 .expect(200);
@@ -138,7 +138,7 @@ describe('Reviews', () => {
             const descOrder = [...desc].sort((x, y) => y - x);
             expect(desc).toEqual(descOrder);
         });
-        it('200: When passed with a category query - correctly returns filtered by that category', async () => {
+        it('200: Returns the a filtered list based upon given category', async () => {
             const res = await request(app)
                 .get('/api/reviews?category=social_deduction')
                 .expect(200);
@@ -148,7 +148,7 @@ describe('Reviews', () => {
             );
             expect(all_check).toBe(true);
         });
-        it('404: When passed a valid category but invalid query, returns an error', async () => {
+        it('404: Returns an error when passed a valid category but invalid query', async () => {
             const res = await request(app)
                 .get('/api/reviews?category=invalid_query')
                 .expect(404);
@@ -158,7 +158,7 @@ describe('Reviews', () => {
                 error: 'Invalid query',
             });
         });
-        it("400: When passed a category that does'nt exist, returns an error", async () => {
+        it("400: When passed a category that doesn't exist, returns an error containing a list of valid categories.", async () => {
             const res = await request(app)
                 .get('/api/reviews?not_a_category=me_neither')
                 .expect(400);
@@ -168,7 +168,7 @@ describe('Reviews', () => {
                 status: 400,
             });
         });
-        it('200: If passed an empty sort_by query, returns all the reviews sorted by date.', async () => {
+        it('200: Returns all reviews sorted by date if passed an empty sort_by query.', async () => {
             const res = await request(app)
                 .get('/api/reviews?sort_by')
                 .expect(200);
@@ -183,7 +183,7 @@ describe('Reviews', () => {
 
             expect(test_result).toEqual(ordered);
         });
-        it('200: If passed a sort_by query with valid column, sorts by that query', async () => {
+        it('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
             const res = await request(app)
                 .get('/api/reviews?sort_by=amount_of_comments')
                 .expect(200);
@@ -198,7 +198,7 @@ describe('Reviews', () => {
 
             expect(test_result).toEqual(ordered);
         });
-        it.only('404: If passed a query with invalid column name, returns an error', async () => {
+        it('404: Returns an error containing valid_columns when passed a sort_by with invalid column name', async () => {
             const res = await request(app)
                 .get('/api/reviews?sort_by=not_real_column_name')
                 .expect(404);
