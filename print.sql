@@ -21,7 +21,7 @@
 -- GROUP BY title, owner, reviews.review_id;
 
 
-SELECT * FROM comments;
+SELECT created_at FROM reviews;
 
 
 

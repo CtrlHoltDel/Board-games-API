@@ -2,6 +2,7 @@ const db = require('../db/connection');
 const {
     fetchAllReviewsValidate,
     formatCheckVote,
+    validateSortBy,
 } = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
@@ -51,14 +52,14 @@ exports.fetchAllReviews = async (queries) => {
     let ORDER = ` ORDER BY reviews.review_id desc`;
     let WHERE = '';
 
-    // if (!fetchAllReviewsValidate(queries)) {
-    //     return rejPromise(400, '/api/reviews?category=query', {
-    //         valid_queries: ['sort_by', 'order', 'category'],
-    //     });
-    // }
-
     await fetchAllReviewsValidate(queries);
 
+    if (queries.sort_by !== undefined) {
+        let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
+        console.log(column);
+        await validateSortBy(column);
+        ORDER = ` ORDER BY ${column} ASC`;
+    }
     if (queries.order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
 
     if (queries.category) {
@@ -74,7 +75,6 @@ exports.fetchAllReviews = async (queries) => {
     GROUP BY title, owner, reviews.review_id
     ${ORDER}
     ;`;
-
     const reviews = await db.query(query_body);
 
     if (reviews.rows.length === 0) {

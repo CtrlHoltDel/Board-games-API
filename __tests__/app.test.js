@@ -107,7 +107,7 @@ describe('Reviews', () => {
             });
         });
     });
-    describe('GET /api/reviews?queries=', () => {
+    describe.only('GET /api/reviews?queries=', () => {
         it('200: When passed with no queries, returns the full list of reviews with the correct keys', async () => {
             const res = await request(app).get('/api/reviews').expect(200);
             res.body.reviews.forEach((review) => {
@@ -168,10 +168,55 @@ describe('Reviews', () => {
                 status: 400,
             });
         });
-        // it('200: If passed an empty sort_by query, returns all the reviews sorted by date.', async () => {
-        //     const res = await request(app)
-        //         .get('/api/reviews?sort_by')
-        //         .expect(200);
-        // });
+        it('200: If passed an empty sort_by query, returns all the reviews sorted by date.', async () => {
+            const res = await request(app)
+                .get('/api/reviews?sort_by')
+                .expect(200);
+
+            const test_result = res.body.reviews.map(
+                (review) => review.created_at
+            );
+
+            const ordered = test_result.sort((x, y) => {
+                return x - y;
+            });
+
+            expect(test_result).toEqual(ordered);
+        });
+        it('200: If passed a sort_by query with valid column, sorts by that query', async () => {
+            const res = await request(app)
+                .get('/api/reviews?sort_by=amount_of_comments')
+                .expect(200);
+
+            const test_result = res.body.reviews.map(
+                (review) => review.amount_of_comments
+            );
+
+            const ordered = test_result.sort((x, y) => {
+                return x - y;
+            });
+
+            expect(test_result).toEqual(ordered);
+        });
+        it.only('404: If passed a query with invalid column name, returns an error', async () => {
+            const res = await request(app)
+                .get('/api/reviews?sort_by=not_real_column_name')
+                .expect(404);
+            expect(res.body.error).toEqual({
+                status: 404,
+                endpoint: '/api/reviews?sort_by=column_to_sort_by',
+                error: {
+                    invalid_column: 'not_real_column_name',
+                    valid_columns: [
+                        'owner',
+                        'title',
+                        'review_id',
+                        'category',
+                        'votes',
+                        'comment_count',
+                    ],
+                },
+            });
+        });
     });
 });

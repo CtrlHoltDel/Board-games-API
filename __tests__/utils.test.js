@@ -2,6 +2,7 @@ const { objectToArray } = require('../db/utils/data-manipulation');
 const {
     fetchAllReviewsValidate,
     formatCheckVote,
+    validateSortBy,
 } = require('../utils/validation');
 
 describe('Seed tests', () => {
@@ -66,6 +67,39 @@ describe('Validation', () => {
             expect(
                 fetchAllReviewsValidate({ order: 'not_any' })
             ).rejects.toEqual(rejectedPromise);
+        });
+    });
+    describe('sort by validate', () => {
+        it('When passed a valid column to sort by, returns undefined', () => {
+            const validColumns = [
+                'owner',
+                'title',
+                'review_id',
+                'category',
+                'votes',
+                'comment_count',
+            ];
+
+            validColumns.forEach((column) => {
+                expect(validateSortBy(column)).toBeUndefined();
+            });
+        });
+        it('When passed a sort_by with an invalid column query - returns an rejected promise with error', () => {
+            expect(validateSortBy('invalid_column_type')).rejects.toEqual({
+                status: 404,
+                endpoint: '/api/reviews?sort_by=column_to_sort_by',
+                error: {
+                    invalid_column: 'invalid_column_type',
+                    valid_columns: [
+                        'owner',
+                        'title',
+                        'review_id',
+                        'category',
+                        'votes',
+                        'comment_count',
+                    ],
+                },
+            });
         });
     });
 });
