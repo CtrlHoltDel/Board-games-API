@@ -1,9 +1,5 @@
 const db = require('../db/connection');
-const {
-    fetchAllReviewsValidate,
-    formatCheckVote,
-    validateSortBy,
-} = require('../utils/validation');
+const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
     if (!Number(id)) {
@@ -42,7 +38,7 @@ exports.updateVoteById = async (id, input) => {
         });
     }
 
-    await formatCheckVote(input);
+    await validate.voteIncrementer(input);
     const query = `
     UPDATE reviews
     SET votes = votes + ${input.inc_votes}
@@ -58,12 +54,11 @@ exports.fetchAllReviews = async (queries) => {
     let ORDER = ` ORDER BY reviews.review_id desc`;
     let WHERE = '';
 
-    await fetchAllReviewsValidate(queries);
+    await validate.allReviews(queries);
 
     if (queries.sort_by !== undefined) {
         let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
-        console.log(column);
-        await validateSortBy(column);
+        await validate.sortBy(column);
         ORDER = ` ORDER BY ${column} ASC`;
     }
     if (queries.order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
@@ -73,7 +68,7 @@ exports.fetchAllReviews = async (queries) => {
         WHERE = ` WHERE category = '${category}'`;
     }
 
-    const query_body = `
+    const queryBody = `
     SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(body) amount_of_comments FROM comments
     FULL OUTER JOIN reviews
     ON comments.review_id = reviews.review_id
@@ -81,7 +76,7 @@ exports.fetchAllReviews = async (queries) => {
     GROUP BY title, owner, reviews.review_id
     ${ORDER}
     ;`;
-    const reviews = await db.query(query_body);
+    const reviews = await db.query(queryBody);
 
     if (reviews.rows.length === 0) {
         return Promise.reject({
@@ -104,15 +99,26 @@ exports.fetchCommentsByReviewId = async (id) => {
     if (!Number(id)) {
         return Promise.reject({
             status: 400,
-            endpoint: '/api/reviews/:id',
+            endpoint: '/api/reviews/:id/comments',
             error: 'id must be a number',
         });
     }
-    const query_body = `
+    const queryBody = `
                 SELECT review_id, comment_id, votes, created_at, username, body FROM comments
                 JOIN users
                 ON users.username = comments.author
                 WHERE review_id = $1;`;
-    const result = await db.query(query_body, [id]);
+    const result = await db.query(queryBody, [id]);
     return result.rows;
+};
+
+exports.addCommentToReview = async (id, { username, body }) => {
+    await validate.addComment(username, body);
+
+    const queryBody = `INSERT INTO comments(author, review_id, created_at, body)
+        VALUES ($1,$2,$3,$4)
+        RETURNING *;`;
+
+    const result = await db.query(queryBody, [username, id, new Date(), body]);
+    return result.rows[0];
 };

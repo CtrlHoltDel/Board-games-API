@@ -1,8 +1,36 @@
 You are now connected to database "nc_games_test" as user "ctrlholtdel".
- comment_id | votes | created_at |  username   |                                   body                                    
-------------+-------+------------+-------------+---------------------------------------------------------------------------
-          1 |    16 | 2017-11-22 | bainesface  | I loved this game too!
-          4 |    16 | 2017-11-22 | bainesface  | EPIC board game!
-          5 |    13 | 2021-01-18 | mallionaire | Now this is a story all about how, board games turned my life upside down
-(3 rows)
+ comment_id |     author      | review_id | votes | created_at |                                                       body                                                       
+------------+-----------------+-----------+-------+------------+------------------------------------------------------------------------------------------------------------------
+          1 | bainesface      |         2 |    16 | 2017-11-22 | I loved this game too!
+          2 | mallionaire     |         3 |    13 | 2021-01-18 | My dog loved this game too!
+          3 | philippaclaire9 |         3 |    10 | 2021-01-18 | I didn't know dogs could play games
+          4 | bainesface      |         2 |    16 | 2017-11-22 | EPIC board game!
+          5 | mallionaire     |         2 |    13 | 2021-01-18 | Now this is a story all about how, board games turned my life upside down
+          6 | philippaclaire9 |         3 |    10 | 2021-03-27 | Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite
+(6 rows)
+
+    username     |                                avatar_url                                 |   name   
+-----------------+---------------------------------------------------------------------------+----------
+ mallionaire     | https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg     | haz
+ philippaclaire9 | https://avatars2.githubusercontent.com/u/24604688?s=460&v=4               | philippa
+ bainesface      | https://avatars2.githubusercontent.com/u/24394918?s=400&v=4               | sarah
+ dav3rid         | https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png | dave
+(4 rows)
+
+ comment_id | author  | review_id | votes | created_at |                 body                 
+------------+---------+-----------+-------+------------+--------------------------------------
+          8 | dav3rid |         3 |     0 | 2021-09-21 | This is the body of a random comment
+(1 row)
+
+INSERT 0 1
+ comment_id |     author      | review_id | votes | created_at |                                                       body                                                       
+------------+-----------------+-----------+-------+------------+------------------------------------------------------------------------------------------------------------------
+          1 | bainesface      |         2 |    16 | 2017-11-22 | I loved this game too!
+          2 | mallionaire     |         3 |    13 | 2021-01-18 | My dog loved this game too!
+          3 | philippaclaire9 |         3 |    10 | 2021-01-18 | I didn't know dogs could play games
+          4 | bainesface      |         2 |    16 | 2017-11-22 | EPIC board game!
+          5 | mallionaire     |         2 |    13 | 2021-01-18 | Now this is a story all about how, board games turned my life upside down
+          6 | philippaclaire9 |         3 |    10 | 2021-03-27 | Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite
+          8 | dav3rid         |         3 |     0 | 2021-09-21 | This is the body of a random comment
+(7 rows)
 

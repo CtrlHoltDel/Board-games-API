@@ -9,10 +9,21 @@
 
 -- owner, title, review_id, category, review_img_url, created_at, votes, comment_count
 
-SELECT comment_id, votes, created_at, username, body FROM comments
-JOIN users
-ON users.username = comments.author
-WHERE review_id = 2;
+
+
+SELECT * FROM comments;
+SELECT * FROM users;
+
+
+INSERT INTO comments(author, review_id, created_at, body)
+VALUES ('dav3rid', 3, CURRENT_DATE, 'This is the body of a random comment')
+RETURNING *;
+
+SELECT * FROM comments;
+
+-- JOIN users
+-- ON users.username = comments.author
+-- WHERE review_id = 2;
 
 -- comment_count
 -- SELECT * FROM reviews;

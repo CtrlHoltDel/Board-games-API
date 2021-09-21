@@ -1,4 +1,6 @@
-exports.fetchAllReviewsValidate = (queries) => {
+const validate = {};
+
+validate.allReviews = (queries) => {
     const queriesWhitelist = ['sort_by', 'order', 'category'];
     const currentKeys = Object.keys(queries);
     const rejectObject = {
@@ -22,7 +24,7 @@ exports.fetchAllReviewsValidate = (queries) => {
     }
 };
 
-exports.formatCheckVote = (object) => {
+validate.voteIncrementer = (object) => {
     if (
         typeof object.inc_votes !== 'number' ||
         Object.keys(object).length !== 1
@@ -35,7 +37,7 @@ exports.formatCheckVote = (object) => {
     }
 };
 
-exports.validateSortBy = (object) => {
+validate.sortBy = (object) => {
     const validColumns = [
         'owner',
         'title',
@@ -64,3 +66,15 @@ exports.validateSortBy = (object) => {
         });
     }
 };
+
+validate.addComment = (username, body) => {
+    if (typeof username !== 'string' || typeof body !== 'string') {
+        return Promise.reject({
+            status: 400,
+            endpoint: '/api/reviews/:id/comments',
+            valid_format: `{ username: string, body: string}`,
+        });
+    }
+};
+
+module.exports = validate;

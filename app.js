@@ -1,7 +1,7 @@
 const express = require('express');
 const {
     missingPath,
-    error400,
+    customError,
     serverError,
     pgErrors,
 } = require('./errors/errors');
@@ -15,7 +15,7 @@ app.use('/api', apiRouter);
 
 app.all('/*', missingPath);
 
-app.use(error400);
+app.use(customError);
 app.use(pgErrors);
 app.use(serverError);
 
