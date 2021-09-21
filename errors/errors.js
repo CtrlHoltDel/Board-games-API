@@ -3,7 +3,11 @@ exports.missingPath = (req, res, next) => {
 };
 
 exports.error400 = (error, req, res, next) => {
-    res.status(400).send({ error });
+    if (error.status === 400) {
+        res.status(400).send({ error });
+    } else {
+        next();
+    }
 };
 
 exports.serverError = (error, req, res, next) => {

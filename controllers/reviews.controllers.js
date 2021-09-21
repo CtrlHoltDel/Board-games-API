@@ -1,12 +1,38 @@
-const { fetchReviewById } = require('../models/reviews.models');
+const {
+    fetchReviewById,
+    updateVoteById,
+    fetchAllReviews,
+} = require('../models/reviews.models');
 
-exports.getReviewById = (req, res, next) => {
+exports.getReviewById = async (req, res, next) => {
     const { id } = req.params;
-    fetchReviewById(id)
-        .then((review) => {
-            res.status(200).send({ review });
-        })
-        .catch((err) => {
-            next(err);
-        });
+
+    try {
+        const review = await fetchReviewById(id);
+        res.status(200).send({ review });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.patchVoteById = async (req, res, next) => {
+    const { id } = req.params;
+    const { body } = req;
+
+    try {
+        const updated_review = await updateVoteById(id, body);
+        res.status(200).send({ updated_review });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getReviewList = async (req, res, next) => {
+    try {
+        const reviews = await fetchAllReviews(req.query);
+        res.status(200).send({ reviews });
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
 };

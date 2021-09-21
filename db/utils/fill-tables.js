@@ -15,7 +15,7 @@ exports.fillTables = async ({
     );
 
     const usersQuery = format(
-        `INSERT INTO users (username, avatar_url, name) 
+        `INSERT INTO users (username, name, avatar_url) 
          VALUES %L;`,
         objectToArray(userData)
     );
