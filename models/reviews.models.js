@@ -115,6 +115,45 @@ exports.addCommentToReview = async (id, { username, body }) => {
         VALUES ($1,$2,$3,$4)
         RETURNING *;`;
 
-    const result = await db.query(queryBody, [username, id, new Date(), body]);
-    return result.rows[0];
+    const { rows } = await db.query(queryBody, [
+        username,
+        id,
+        new Date(),
+        body,
+    ]);
+    return rows[0];
+};
+
+exports.addReview = async ({
+    owner,
+    title,
+    review_body,
+    designer,
+    category,
+}) => {
+    const inputVariables = [title, review_body, designer, category, owner];
+
+    // inputVariables.forEach(async (variable) => {
+    //     if (!variable)
+    //         Promise.reject({ status: 400, error: 'Invalid key name' });
+    // });
+
+    for (i = 0; i < inputVariables.length; i++) {
+        if (!inputVariables[i] || typeof inputVariables[i] !== 'string')
+            return Promise.reject({
+                status: 400,
+                error: 'invalid key name or value',
+                endpoint: '/api/reviews',
+            });
+    }
+
+    const queryBody = `INSERT INTO reviews 
+        (title, review_body, designer ,category ,owner , created_at ) 
+        VALUES 
+        ($1,$2,$3,$4,$5,CURRENT_TIMESTAMP )
+        RETURNING *;`;
+
+    const { rows } = await db.query(queryBody, inputVariables);
+
+    return rows[0];
 };

@@ -6,12 +6,6 @@
 -- DROP TABLE IF EXISTS users;
 
 
--- DELETE FROM reviews 
--- WHERE review_id = 3;
-
-
-
-
 \echo '\n CATEGORIES'
 SELECT * FROM categories;
 \echo '\n USERS'

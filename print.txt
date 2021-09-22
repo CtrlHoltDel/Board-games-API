@@ -1,10 +1,4 @@
 You are now connected to database "nc_games_test" as user "ctrlholtdel".
- slug | description 
-------+-------------
- name | description
-(1 row)
-
-INSERT 0 1
 
  CATEGORIES
        slug       |                     description                     
@@ -13,8 +7,7 @@ INSERT 0 1
  social deduction | Players attempt to uncover each other's hidden role
  dexterity        | Games involving physical skill
  children's games | Games suitable for children
- name             | description
-(5 rows)
+(4 rows)
 
 
  USERS

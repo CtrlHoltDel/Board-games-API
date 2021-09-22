@@ -106,6 +106,12 @@ describe('Categories', () => {
                     slug: 'legit_category_name',
                     description: 'Description of the category',
                 });
+
+                const { rows } = await db.query(
+                    "SELECT slug FROM categories WHERE slug = 'legit_category_name'"
+                );
+
+                expect(rows[0].slug).toBe('legit_category_name');
             });
             it('400: Returns an error if passed an invalid body', async () => {
                 const expectedResult = {
@@ -139,6 +145,74 @@ describe('Categories', () => {
 });
 
 describe('Reviews', () => {
+    describe('/api/reviews', () => {
+        describe('POST', () => {
+            it('201: When passed a valid body, responds with the newly created review and inserts review', async () => {
+                const { body } = await request(app)
+                    .post('/api/reviews')
+                    .expect(201)
+                    .send({
+                        owner: 'bainesface',
+                        title: 'random title',
+                        review_body: 'A review body - not sure what to write',
+                        designer: 'Akihisa Okui',
+                        category: 'euro game',
+                    });
+                expect(body.review).toMatchObject({
+                    review_id: expect.any(Number),
+                    title: expect.any(String),
+                    review_body: expect.any(String),
+                    designer: expect.any(String),
+                    review_img_url: expect.any(String),
+                    votes: expect.any(Number),
+                    category: expect.any(String),
+                    owner: expect.any(String),
+                    created_at: expect.any(String),
+                });
+
+                const { rows } = await db.query(
+                    `SELECT review_id FROM reviews WHERE title = 'random title'`
+                );
+
+                expect(rows[0].review_id).toBe(14);
+            });
+            it('400: Returns an error if passed an invalid body', async () => {
+                const invalidKey = await request(app)
+                    .post('/api/reviews')
+                    .expect(400)
+                    .send({
+                        owner: 'bainesface',
+                        title: 'random title',
+                        review_body: 'A review body - not sure what to write',
+                        designer: 'Akihisa Okui',
+                        invalid_key: 'euro game',
+                    });
+
+                expect(invalidKey.body.error).toEqual({
+                    status: 400,
+                    error: 'invalid key name or value',
+                    endpoint: '/api/reviews',
+                });
+
+                const invalidValue = await request(app)
+                    .post('/api/reviews')
+                    .expect(400)
+                    .send({
+                        owner: 'bainesface',
+                        title: 'random title',
+                        review_body: 'A review body - not sure what to write',
+                        designer: 'Akihisa Okui',
+                        category: ['invalid value'],
+                    });
+
+                expect(invalidValue.body.error).toEqual({
+                    status: 400,
+                    error: 'invalid key name or value',
+                    endpoint: '/api/reviews',
+                });
+            });
+        });
+    });
     describe('/api/reviews/:id', () => {
         describe('GET', () => {
             it('200: Returns a review object with the correct properties', async () => {
@@ -600,15 +674,18 @@ describe('Pagination', () => {
             const result1 = await request(app)
                 .get('/api/reviews?limit=5&p=2')
                 .expect(200);
+
             expect(result1.body.reviews[0]).toMatchObject({
                 owner: 'mallionaire',
                 title: 'One Night Ultimate Werewolf',
                 review_id: 8,
             });
 
-            const { result2 } = await request(app)
-                .get('/api/reviews?limit=3&p=4')
+            const result2 = await request(app)
+                .get('/api/reviews?limit=2&p=4')
                 .expect(200);
+
+            expect(result2.body.reviews[0].review_id).toBe(7);
         });
         it('400: Returns an error if something other than a number is passed to limit=', async () => {
             const { body } = await request(app)
