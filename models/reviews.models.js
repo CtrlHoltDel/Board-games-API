@@ -157,3 +157,16 @@ exports.addReview = async ({
 
     return rows[0];
 };
+
+exports.removeReview = async (id) => {
+    await validate.id(id);
+    const queryBody = `DELETE FROM reviews WHERE review_id = $1 RETURNING *;`;
+    const { rows } = await db.query(queryBody, [id]);
+    if (rows.length === 0) {
+        return Promise.reject({
+            status: 400,
+            error: 'No reviews with this ID',
+            endpoint: '/api/reviews/:id',
+        });
+    }
+};

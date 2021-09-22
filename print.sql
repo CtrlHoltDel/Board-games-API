@@ -9,11 +9,10 @@
 \echo '\n CATEGORIES'
 SELECT * FROM categories;
 \echo '\n USERS'
-
 SELECT * FROM users;
 \echo '\n REVIEWS'
 SELECT * FROM reviews;
 \echo '\n COMMENTS'
 SELECT * FROM comments;
 
-
+SELECT * FROM reviews WHERE review_id = 4

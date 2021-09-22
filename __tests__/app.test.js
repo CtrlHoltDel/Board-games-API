@@ -302,6 +302,36 @@ describe('Reviews', () => {
                 });
             });
         });
+        describe('DELETE', () => {
+            it('204: Deletes review and all associated comments based on passed id', async () => {
+                await request(app).delete('/api/reviews/2').expect(204);
+
+                const result = await db.query(
+                    `SELECT * FROM reviews WHERE review_id = 2;`
+                );
+
+                const comments = await db.query(
+                    `SELECT * FROM comments WHERE review_id = 2;`
+                );
+                expect(result.rows).toHaveLength(0);
+                expect(comments.rows).toHaveLength(0);
+            });
+            it('404: Returns an error if passed something that is not a number', async () => {
+                await request(app)
+                    .delete('/api/reviews/not_a_number')
+                    .expect(404);
+            });
+            it("400: Returns an error if passed the id of a review that doesn'nt exist", async () => {
+                const { body } = await request(app)
+                    .delete('/api/reviews/248')
+                    .expect(400);
+                expect(body.error).toEqual({
+                    status: 400,
+                    error: 'No reviews with this ID',
+                    endpoint: '/api/reviews/:id',
+                });
+            });
+        });
     });
     describe('/api/reviews?queries=', () => {
         describe('GET', () => {
