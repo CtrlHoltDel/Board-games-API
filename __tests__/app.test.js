@@ -247,7 +247,14 @@ describe('Reviews', () => {
                     .expect(400);
                 expect(res.body.error).toMatchObject({
                     endpoint: '/api/reviews?category=query',
-                    error: { valid_queries: ['sort_by', 'order', 'category'] },
+                    error: {
+                        valid_queries: [
+                            'sort_by',
+                            'order',
+                            'category',
+                            'limit',
+                        ],
+                    },
                     status: 400,
                 });
             });
@@ -266,7 +273,7 @@ describe('Reviews', () => {
 
                 expect(test_result).toEqual(ordered);
             });
-            it('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
+            it.only('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
                 const res = await request(app)
                     .get('/api/reviews?sort_by=amount_of_comments')
                     .expect(200);
@@ -439,35 +446,35 @@ describe('Comments', () => {
         });
         describe('PATCH', () => {
             it('400: Returns an error if given an incorrect body', async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .patch('/api/comments/3')
                     .expect(400)
                     .send({ bad_key: 'not a number' });
 
-                expect(res.body.error).toEqual({
+                expect(body.error).toEqual({
                     status: 400,
                     endpoint: '/api/comments/comment_id',
                     error: 'format to { inc_votes : number }',
                 });
             });
             it("404: Returns an error if endpoint isn't a number", async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .patch('/api/comments/not_a_number')
                     .expect(404);
 
-                expect(res.body.error).toEqual({
+                expect(body.error).toEqual({
                     status: 404,
                     endpoint: '/api/comments/comment_id',
                     error: 'id must be a number',
                 });
             });
             it('201: Returns the comment altered by the correct amount', async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .patch('/api/comments/3')
                     .expect(201)
                     .send({ inc_votes: 20 });
 
-                expect(res.body.comment).toEqual({
+                expect(body.comment).toEqual({
                     author: 'philippaclaire9',
                     body: "I didn't know dogs could play games",
                     comment_id: 3,
@@ -477,12 +484,12 @@ describe('Comments', () => {
                 });
             });
             it('201: Also works with negative numbers', async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .patch('/api/comments/3')
                     .expect(201)
                     .send({ inc_votes: -20 });
 
-                expect(res.body.comment).toEqual({
+                expect(body.comment).toEqual({
                     author: 'philippaclaire9',
                     body: "I didn't know dogs could play games",
                     comment_id: 3,
@@ -499,9 +506,64 @@ describe('Users', () => {
     describe('/api/users', () => {
         describe('GET', () => {
             it('200: Returns a full array of Users', async () => {
-                const res = await request(app).get('/api/users').expect(200);
-                expect(res.body.users).toHaveLength(4);
+                const { body } = await request(app)
+                    .get('/api/users')
+                    .expect(200);
+                expect(body.users).toHaveLength(4);
             });
+        });
+    });
+});
+
+describe('Pagination', () => {
+    describe('/api/reviews?limit=', () => {
+        it('200: Returns a list of 10 items when not passed a query body', async () => {
+            const { body } = await request(app).get('/api/reviews').expect(200);
+            expect(body.reviews.length).toBe(10);
+        });
+        it('200: Returns a list of a specified amount of items when passed a query body', async () => {
+            const { body } = await request(app)
+                .get('/api/reviews?limit=5')
+                .expect(200);
+            expect(body.reviews.length).toBe(5);
+        });
+        it('200: Returns a list of a specified amount when passed with another query - also contains count of full list', async () => {
+            const { body } = await request(app)
+                .get('/api/reviews?limit=5&category=social deduction')
+                .expect(200);
+            expect(body.reviews).toHaveLength(5);
+            expect(body.count).toBe('11');
+        });
+        it('200: Returns a list with the specified page', async () => {
+            const result1 = await request(app)
+                .get('/api/reviews?limit=5&p=2')
+                .expect(200);
+            expect(result1.body.reviews[0]).toMatchObject({
+                owner: 'mallionaire',
+                title: 'One Night Ultimate Werewolf',
+                review_id: 8,
+            });
+
+            const { result2 } = await request(app)
+                .get('/api/reviews?limit=3&p=4')
+                .expect(200);
+        });
+        it('400: Returns an error if something other than a number is passed to limit=', async () => {
+            const { body } = await request(app)
+                .get('/api/reviews?limit=not_a_number')
+                .expect(400);
+            expect(body.error).toEqual({
+                status: 400,
+                endpoint: '/api/reviews?category=query',
+                error: {
+                    valid_queries: ['sort_by', 'order', 'category', 'limit'],
+                },
+            });
+        });
+        it('404: If passed a page limit which has no results - returns an error', async () => {
+            const { body } = await request(app)
+                .get('/api/reviews?p=3')
+                .expect(404);
         });
     });
 });

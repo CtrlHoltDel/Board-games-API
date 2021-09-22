@@ -1,13 +1,13 @@
 const validate = {};
 
 validate.allReviews = (queries) => {
-    const queriesWhitelist = ['sort_by', 'order', 'category'];
+    const queriesWhitelist = ['sort_by', 'order', 'category', 'limit', 'p'];
     const currentKeys = Object.keys(queries);
     const rejectObject = {
         status: 400,
         endpoint: '/api/reviews?category=query',
         error: {
-            valid_queries: ['sort_by', 'order', 'category'],
+            valid_queries: ['sort_by', 'order', 'category', 'limit'],
         },
     };
 
@@ -20,6 +20,11 @@ validate.allReviews = (queries) => {
             queries[key] = queries[key].toLowerCase();
             if (!(queries[key] === 'asc' || queries[key] === 'desc')) {
                 return Promise.reject(rejectObject);
+            }
+        }
+        if (key === 'limit') {
+            if (!Number(queries[key])) {
+                if (queries[key] !== '') return Promise.reject(rejectObject);
             }
         }
     }

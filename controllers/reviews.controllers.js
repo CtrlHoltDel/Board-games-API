@@ -30,9 +30,10 @@ exports.patchVoteById = async (req, res, next) => {
 };
 
 exports.getReviewList = async (req, res, next) => {
+    const { query } = req;
     try {
-        const reviews = await fetchAllReviews(req.query);
-        res.status(200).send({ reviews });
+        const { reviews, count } = await fetchAllReviews(query);
+        res.status(200).send({ count, reviews });
     } catch (err) {
         next(err);
     }

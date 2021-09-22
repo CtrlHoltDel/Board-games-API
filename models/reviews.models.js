@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const { limitOffset } = require('../utils/utils');
 const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
@@ -39,22 +40,24 @@ exports.updateVoteById = async (id, input) => {
 };
 
 exports.fetchAllReviews = async (queries) => {
+    const { limit, sort_by, order, category, p } = queries;
+
     let ORDER = ` ORDER BY reviews.review_id desc`;
     let WHERE = '';
 
     await validate.allReviews(queries);
 
-    if (queries.sort_by) {
+    if (order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
+    if (sort_by) {
         let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
         await validate.sortBy(column);
         ORDER = ` ORDER BY ${column} ASC`;
     }
-    if (queries.order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
-
-    if (queries.category) {
+    if (category) {
         const category = queries.category.replace('_', ' ');
         WHERE = ` WHERE category = '${category}'`;
     }
+    const [LIMIT, OFFSET] = limitOffset(limit, p);
 
     const queryBody = `
     SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(body) amount_of_comments FROM comments
@@ -63,16 +66,24 @@ exports.fetchAllReviews = async (queries) => {
     ${WHERE}
     GROUP BY title, owner, reviews.review_id
     ${ORDER}
+    LIMIT $1 OFFSET $2
     ;`;
-    const reviews = await db.query(queryBody);
 
-    return reviews.rows.length === 0
-        ? Promise.reject({
-              status: 404,
-              endpoint: '/api/reviews?category=query',
-              error: 'Invalid query',
-          })
-        : reviews.rows;
+    console.log(queryBody);
+
+    const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
+    const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
+    const { count } = allResults.rows[0];
+
+    if (rows.length === 0) {
+        return Promise.reject({
+            status: 404,
+            endpoint: '/api/reviews?category=query',
+            error: 'Invalid query',
+        });
+    } else {
+        return { reviews: rows, count: count };
+    }
 };
 
 exports.fetchCommentsByReviewId = async (id) => {

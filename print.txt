@@ -50,3 +50,7 @@ You are now connected to database "nc_games_test" as user "ctrlholtdel".
           6 | philippaclaire9 |         3 |    10 | 2021-03-27 | Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite
 (6 rows)
 
+ owner | title | review_id | category | review_img_url | created_at | votes | amount_of_comments 
+-------+-------+-----------+----------+----------------+------------+-------+--------------------
+(0 rows)
+

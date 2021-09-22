@@ -7,7 +7,7 @@ const {
     reviewsRouter,
     commentsRouter,
     usersRouter,
-} = require('./routerIndex');
+} = require('./');
 
 apiRouter.get('/', listOfAPIs);
 apiRouter.use('/categories', categoriesRouter);
