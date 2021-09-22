@@ -273,7 +273,7 @@ describe('Reviews', () => {
 
                 expect(test_result).toEqual(ordered);
             });
-            it.only('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
+            it('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
                 const res = await request(app)
                     .get('/api/reviews?sort_by=amount_of_comments')
                     .expect(200);
@@ -560,10 +560,54 @@ describe('Pagination', () => {
                 },
             });
         });
-        it('404: If passed a page limit which has no results - returns an error', async () => {
+        it('404: Returns an error if passed a page which contains no results', async () => {
             const { body } = await request(app)
                 .get('/api/reviews?p=3')
                 .expect(404);
+        });
+    });
+    describe('/api/reviews/:review_id/comments', () => {
+        const addComments = async (user, amount) => {
+            for (let i = 0; i < amount; i++) {
+                await request(app)
+                    .post(`/api/reviews/${user}/comments`)
+                    .expect(201)
+                    .send({
+                        username: 'bainesface',
+                        body: `${i}`,
+                    });
+            }
+        };
+
+        it('200: returns a list of 10 items when not passed a query body', async () => {
+            await addComments(2, 15);
+
+            const { body } = await request(app)
+                .get('/api/reviews/2/comments')
+                .expect(200);
+
+            expect(body.reviews).toHaveLength(10);
+        });
+        it('200: Returns a list of a specified amount when passed with another query - also contains count of full list', async () => {
+            await addComments(2, 15);
+
+            const { body } = await request(app)
+                .get('/api/reviews/2/comments?limit=3&p=5')
+                .expect(200);
+
+            expect(body.reviews).toHaveLength(3);
+            expect(body.reviews[0].body === '9').toBeTruthy();
+        });
+        it("400: Returns an error if passed a page number which doesn't exist", async () => {
+            const { body } = await request(app)
+                .get('/api/reviews/2/comments?p=3223')
+                .expect(404);
+
+            expect(body.error).toEqual({
+                status: 404,
+                endpoint: '/api/reviews/:review_id/comments?limit=?&p=?',
+                error: 'Invalid query',
+            });
         });
     });
 });

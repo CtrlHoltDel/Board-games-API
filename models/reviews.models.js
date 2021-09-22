@@ -57,7 +57,7 @@ exports.fetchAllReviews = async (queries) => {
         const category = queries.category.replace('_', ' ');
         WHERE = ` WHERE category = '${category}'`;
     }
-    const [LIMIT, OFFSET] = limitOffset(limit, p);
+    const { LIMIT, OFFSET } = limitOffset(limit, p);
 
     const queryBody = `
     SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(body) amount_of_comments FROM comments
@@ -69,11 +69,10 @@ exports.fetchAllReviews = async (queries) => {
     LIMIT $1 OFFSET $2
     ;`;
 
-    console.log(queryBody);
-
-    const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
     const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
     const { count } = allResults.rows[0];
+
+    const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
 
     if (rows.length === 0) {
         return Promise.reject({
@@ -86,15 +85,27 @@ exports.fetchAllReviews = async (queries) => {
     }
 };
 
-exports.fetchCommentsByReviewId = async (id) => {
+exports.fetchCommentsByReviewId = async (id, queries) => {
+    const { limit, p } = queries;
+
+    const { LIMIT, OFFSET } = limitOffset(limit, p);
+
     await validate.id(id, '/api/reviews/:id/comments');
     const queryBody = `
                 SELECT review_id, comment_id, votes, created_at, username, body FROM comments
                 JOIN users
                 ON users.username = comments.author
-                WHERE review_id = $1;`;
-    const result = await db.query(queryBody, [id]);
-    return result.rows;
+                WHERE review_id = $1
+                LIMIT $2 OFFSET $3;`;
+    const { rows } = await db.query(queryBody, [id, LIMIT, OFFSET]);
+
+    return rows.length !== 0
+        ? rows
+        : Promise.reject({
+              status: 404,
+              endpoint: '/api/reviews/:review_id/comments?limit=?&p=?',
+              error: 'Invalid query',
+          });
 };
 
 exports.addCommentToReview = async (id, { username, body }) => {

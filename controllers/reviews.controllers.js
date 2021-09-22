@@ -41,8 +41,9 @@ exports.getReviewList = async (req, res, next) => {
 
 exports.getCommentsByReviewId = async (req, res, next) => {
     const { id } = req.params;
+    const { query } = req;
     try {
-        const reviews = await fetchCommentsByReviewId(id);
+        const reviews = await fetchCommentsByReviewId(id, query);
         res.status(200).send({ reviews });
     } catch (err) {
         next(err);
