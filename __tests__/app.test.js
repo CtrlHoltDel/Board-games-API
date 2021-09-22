@@ -91,6 +91,7 @@ describe('Categories', () => {
                 });
             });
         });
+        describe('POST', () => {});
     });
 });
 
@@ -503,13 +504,31 @@ describe('Comments', () => {
 });
 
 describe('Users', () => {
-    describe('/api/users', () => {
+    describe('/api/users/:username', () => {
         describe('GET', () => {
             it('200: Returns a full array of Users', async () => {
                 const { body } = await request(app)
                     .get('/api/users')
                     .expect(200);
                 expect(body.users).toHaveLength(4);
+            });
+            it('200: Returns a single user when passed with a parametric endpoint', async () => {
+                const { body } = await request(app)
+                    .get('/api/users/dav3rid')
+                    .expect(200);
+
+                expect(body.user).toMatchObject({
+                    username: expect.any(String),
+                    avatar_url: expect.any(String),
+                    name: expect.any(String),
+                });
+            });
+            it("400: Returns an error if a user doesn't exist", async () => {
+                const { body } = await request(app)
+                    .get('/api/users/non-existent-user')
+                    .expect(400);
+
+                expect(body.error.error).toBe('No user with this ID');
             });
         });
     });
