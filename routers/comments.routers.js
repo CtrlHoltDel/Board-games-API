@@ -1,8 +1,7 @@
+const { deleteCommentById } = require('../controllers/comments.controller');
+
 const commentsRouter = require('express').Router();
 
-commentsRouter.delete('/:comment_id', (req, res) => {
-    const { params } = req;
-    console.log(params);
-});
+commentsRouter.delete('/:comment_id', deleteCommentById);
 
 module.exports = commentsRouter;

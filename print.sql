@@ -11,13 +11,15 @@
 
 
 
-SELECT * FROM comments;
-SELECT * FROM users;
+-- SELECT * FROM comments;
+-- SELECT * FROM users;
 
 
-INSERT INTO comments(author, review_id, created_at, body)
-VALUES ('dav3rid', 3, CURRENT_DATE, 'This is the body of a random comment')
-RETURNING *;
+-- INSERT INTO comments(author, review_id, created_at, body)
+-- VALUES ('dav3rid', 3, CURRENT_DATE, 'This is the body of a random comment')
+-- RETURNING *;
+
+DELETE FROM comments WHERE comment_id = 3;
 
 SELECT * FROM comments;
 

@@ -385,22 +385,36 @@ describe('Reviews', () => {
 
 describe('Comments', () => {
     describe('/api/comments/:comment_id', () => {
-        it('Returns no content and deletes based upon the id in the endpoint', async () => {
-            // body: 'My dog loved this game too!',
-            // votes: 13,
-            // author: 'mallionaire',
-            // review_id: 3,
-            // created_at: new Date(1610964545410),
+        describe('DELETE', () => {
+            it('204: Returns no content and deletes based upon the id in the endpoint', async () => {
+                await request(app).delete('/api/comments/3').expect(204);
 
-            const res = await request(app)
-                .delete('/api/comments/3')
-                .expect(204);
+                const { rows } = await db.query(
+                    'SELECT author, review_id FROM comments WHERE comment_id = 3;'
+                );
 
-            const { rows } = await db.query(
-                'SELECT author, review_id FROM comments WHERE review_id = 3;'
-            );
-
-            expect(rows).toHaveLength(1);
+                expect(rows).toHaveLength(0);
+            });
+            it('404: Returns an error if passed a non-number ID', async () => {
+                const res = await request(app)
+                    .delete('/api/comments/not_a_number')
+                    .expect(404);
+                expect(res.body.error).toEqual({
+                    status: 404,
+                    endpoint: '/api/comments/comment_id',
+                    error: 'id must be a number',
+                });
+            });
+            it('400: Returns an error if passed a non-existent comment id', async () => {
+                const res = await request(app)
+                    .delete('/api/comments/3084')
+                    .expect(400);
+                expect(res.body.error).toEqual({
+                    status: 400,
+                    error: `No comment with an id of 3084`,
+                    endpoint: '/api/comments/comment_id',
+                });
+            });
         });
     });
 });
