@@ -17,6 +17,7 @@ validate.allReviews = (queries) => {
             return Promise.reject(rejectObject);
         }
         if (key === 'order') {
+            queries[key] = queries[key].toLowerCase();
             if (!(queries[key] === 'asc' || queries[key] === 'desc')) {
                 return Promise.reject(rejectObject);
             }
