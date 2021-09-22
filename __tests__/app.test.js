@@ -19,15 +19,40 @@ describe('Misc', () => {
         it('200: Returns an object containing information about current endpoints', async () => {
             const res = await request(app).get('/api').expect(200);
             expect(res.body.endpoints).toEqual({
-                GET: [
-                    '/api',
-                    '/api/categories',
-                    '/api/reviews',
-                    '/api/reviews/:review_id',
-                    '/api/reviews/:review_id/comments',
-                ],
-                PATCH: ['/api/reviews/:review_id'],
-                POST: ['/api/reviews/:review_id/comments'],
+                GET: {
+                    '/api': { description: 'Returns a full list of endpoints' },
+                    '/api/categories': {
+                        description: 'Returns a full list of categories',
+                    },
+                    '/api/reviews': {
+                        description: 'Returns a full list of reviews',
+                        queries: {
+                            '?sort_by=:category':
+                                'return reviews sorted by categories',
+                            '?order=': 'sort by either ASC/DESC',
+                            '?category=:category':
+                                'Filters all items by a specific category',
+                        },
+                    },
+                    '/api/reviews/:review_id/comments': {
+                        description:
+                            'Returns a full list of comments based upon the passed review ID',
+                    },
+                },
+                PATCH: {
+                    '/api/reviews/:review_id': {
+                        description:
+                            'Changes the amount of votes on a specified review',
+                        valid_body: '{ inc_votes : number }',
+                    },
+                },
+                POST: {
+                    '/api/reviews/:review_id/comments': {
+                        description:
+                            'Adds a comment to a review based upon passed user id',
+                        valid_body: `{ username: 'string', body: 'STRING'}`,
+                    },
+                },
             });
         });
     });
