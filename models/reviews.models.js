@@ -25,8 +25,8 @@ exports.fetchReviewById = async (id) => {
 
 exports.updateVoteById = async (id, input) => {
     await validate.id(id, '/api/reviews/:id');
-
     await validate.voteIncrementer(input, '/api/reviews/:id');
+
     const query = `
     UPDATE reviews
     SET votes = votes + ${input.inc_votes}

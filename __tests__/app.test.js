@@ -135,7 +135,7 @@ describe('Reviews', () => {
                 });
                 expect(res.body.updated_review.votes).toBe(10);
             });
-            it('201: Update also works with negative numbers', async () => {
+            it('201: Also works with negative numbers', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/2')
                     .expect(201)
@@ -442,6 +442,36 @@ describe('Comments', () => {
                     status: 404,
                     endpoint: '/api/comments/comment_id',
                     error: 'id must be a number',
+                });
+            });
+            it('201: Returns the comment altered by the correct amount', async () => {
+                const res = await request(app)
+                    .patch('/api/comments/3')
+                    .expect(201)
+                    .send({ inc_votes: 20 });
+
+                expect(res.body.comment).toEqual({
+                    author: 'philippaclaire9',
+                    body: "I didn't know dogs could play games",
+                    comment_id: 3,
+                    created_at: '2021-01-18T00:00:00.000Z',
+                    review_id: 3,
+                    votes: 30,
+                });
+            });
+            it('201: Also works with negative numbers', async () => {
+                const res = await request(app)
+                    .patch('/api/comments/3')
+                    .expect(201)
+                    .send({ inc_votes: -20 });
+
+                expect(res.body.comment).toEqual({
+                    author: 'philippaclaire9',
+                    body: "I didn't know dogs could play games",
+                    comment_id: 3,
+                    created_at: '2021-01-18T00:00:00.000Z',
+                    review_id: 3,
+                    votes: -10,
                 });
             });
         });

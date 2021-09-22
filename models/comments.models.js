@@ -22,8 +22,16 @@ exports.removeCommentById = async (id) => {
 
 exports.amendVotesById = async (comment, id) => {
     await validate.id(id, '/api/comments/comment_id');
-
     await validate.voteIncrementer(comment, '/api/comments/comment_id');
 
-    console.log('test');
+    const query_body = `
+    UPDATE comments
+    SET votes = votes + ${comment.inc_votes}
+    WHERE comment_id = $1
+    RETURNING *;
+    `;
+
+    const { rows } = await db.query(query_body, [id]);
+
+    return rows[0];
 };
