@@ -2,13 +2,7 @@ const db = require('../db/connection');
 const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
-    if (!Number(id)) {
-        return Promise.reject({
-            status: 400,
-            endpoint: '/api/reviews/:id',
-            error: 'id must be a number',
-        });
-    }
+    await validate.id(id, '/api/reviews/:id');
 
     const query = `
     SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) FROM users
@@ -30,15 +24,9 @@ exports.fetchReviewById = async (id) => {
 };
 
 exports.updateVoteById = async (id, input) => {
-    if (!Number(id)) {
-        return Promise.reject({
-            status: 400,
-            endpoint: '/api/reviews/:id',
-            error: 'id must be a number',
-        });
-    }
+    await validate.id(id, '/api/reviews/:id');
 
-    await validate.voteIncrementer(input);
+    await validate.voteIncrementer(input, '/api/reviews/:id');
     const query = `
     UPDATE reviews
     SET votes = votes + ${input.inc_votes}
@@ -88,13 +76,7 @@ exports.fetchAllReviews = async (queries) => {
 };
 
 exports.fetchCommentsByReviewId = async (id) => {
-    if (!Number(id)) {
-        return Promise.reject({
-            status: 400,
-            endpoint: '/api/reviews/:id/comments',
-            error: 'id must be a number',
-        });
-    }
+    await validate.id(id, '/api/reviews/:id/comments');
     const queryBody = `
                 SELECT review_id, comment_id, votes, created_at, username, body FROM comments
                 JOIN users

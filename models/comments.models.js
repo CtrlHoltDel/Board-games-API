@@ -1,12 +1,8 @@
 const db = require('../db/connection');
+const validate = require('../utils/validation');
 
 exports.removeCommentById = async (id) => {
-    if (!Number(id))
-        return Promise.reject({
-            status: 404,
-            endpoint: '/api/comments/comment_id',
-            error: 'id must be a number',
-        });
+    await validate.id(id, '/api/comments/comment_id');
 
     const { rows } = await db.query(
         `SELECT * FROM comments WHERE comment_id = $1`,
@@ -22,4 +18,12 @@ exports.removeCommentById = async (id) => {
 
     const query_body = `DELETE FROM comments WHERE comment_id = $1;`;
     await db.query(query_body, [id]);
+};
+
+exports.amendVotesById = async (comment, id) => {
+    await validate.id(id, '/api/comments/comment_id');
+
+    await validate.voteIncrementer(comment, '/api/comments/comment_id');
+
+    console.log('test');
 };

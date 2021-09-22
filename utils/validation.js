@@ -25,14 +25,14 @@ validate.allReviews = (queries) => {
     }
 };
 
-validate.voteIncrementer = (object) => {
+validate.voteIncrementer = (object, endpoint) => {
     if (
         typeof object.inc_votes !== 'number' ||
         Object.keys(object).length !== 1
     ) {
         return Promise.reject({
             status: 400,
-            endpoint: '/api/reviews/:id',
+            endpoint: endpoint,
             error: 'format to { inc_votes : number }',
         });
     }
@@ -74,6 +74,16 @@ validate.addComment = (username, body) => {
             status: 400,
             endpoint: '/api/reviews/:id/comments',
             valid_format: `{ username: string, body: string}`,
+        });
+    }
+};
+
+validate.id = (id, endpoint) => {
+    if (!Number(id)) {
+        return Promise.reject({
+            status: 404,
+            endpoint: endpoint,
+            error: 'id must be a number',
         });
     }
 };

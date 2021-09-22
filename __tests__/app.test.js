@@ -60,13 +60,17 @@ describe('Misc', () => {
 
 describe('Categories', () => {
     describe('/api/categories', () => {
-        it('200: Returns a list of all categories containing both the "slug" and "description" keys', async () => {
-            const res = await request(app).get('/api/categories').expect(200);
-            expect(res.body.categories).toHaveLength(4);
-            res.body.categories.forEach((category) => {
-                expect(category).toMatchObject({
-                    description: expect.any(String),
-                    slug: expect.any(String),
+        describe('GET', () => {
+            it('200: Returns a list of all categories containing both the "slug" and "description" keys', async () => {
+                const res = await request(app)
+                    .get('/api/categories')
+                    .expect(200);
+                expect(res.body.categories).toHaveLength(4);
+                res.body.categories.forEach((category) => {
+                    expect(category).toMatchObject({
+                        description: expect.any(String),
+                        slug: expect.any(String),
+                    });
                 });
             });
         });
@@ -91,12 +95,12 @@ describe('Reviews', () => {
                     votes: expect.any(Number),
                 });
             });
-            it('400: Returns an error if passed a non-number as a parametric endpoint', async () => {
+            it('404: Returns an error if passed a non-number as a parametric endpoint', async () => {
                 const res = await request(app)
                     .get('/api/reviews/not_a_number')
-                    .expect(400);
+                    .expect(404);
                 expect(res.body.error).toEqual({
-                    status: 400,
+                    status: 404,
                     endpoint: '/api/reviews/:id',
                     error: 'id must be a number',
                 });
@@ -139,13 +143,13 @@ describe('Reviews', () => {
 
                 expect(res.body.updated_review.votes).toBe(-15);
             });
-            it("400: Returns an error if endpoint doesn't end in a number.", async () => {
+            it("404: Returns an error if endpoint doesn't end in a number.", async () => {
                 const res = await request(app)
                     .patch('/api/reviews/invalid_id')
-                    .expect(400);
+                    .expect(404);
 
                 expect(res.body.error).toEqual({
-                    status: 400,
+                    status: 404,
                     endpoint: '/api/reviews/:id',
                     error: 'id must be a number',
                 });
@@ -284,13 +288,13 @@ describe('Reviews', () => {
     });
     describe('Reviews/:review_id/comments', () => {
         describe('GET', () => {
-            it("400: Returns an error when passed an id that isn't a number", async () => {
+            it("404: Returns an error when passed an id that isn't a number", async () => {
                 const res = await request(app)
                     .get('/api/reviews/not_a_number/comments')
-                    .expect(400);
+                    .expect(404);
 
                 expect(res.body.error).toEqual({
-                    status: 400,
+                    status: 404,
                     endpoint: '/api/reviews/:id/comments',
                     error: 'id must be a number',
                 });
@@ -414,6 +418,42 @@ describe('Comments', () => {
                     error: `No comment with an id of 3084`,
                     endpoint: '/api/comments/comment_id',
                 });
+            });
+        });
+        describe('PATCH', () => {
+            it('400: Returns an error if given an incorrect body', async () => {
+                const res = await request(app)
+                    .patch('/api/comments/3')
+                    .expect(400)
+                    .send({ bad_key: 'not a number' });
+
+                expect(res.body.error).toEqual({
+                    status: 400,
+                    endpoint: '/api/comments/comment_id',
+                    error: 'format to { inc_votes : number }',
+                });
+            });
+            it("404: Returns an error if endpoint isn't a number", async () => {
+                const res = await request(app)
+                    .patch('/api/comments/not_a_number')
+                    .expect(404);
+
+                expect(res.body.error).toEqual({
+                    status: 404,
+                    endpoint: '/api/comments/comment_id',
+                    error: 'id must be a number',
+                });
+            });
+        });
+    });
+});
+
+describe('Users', () => {
+    describe('/api/users', () => {
+        describe('GET', () => {
+            it('200: Returns a full array of Users', async () => {
+                const res = await request(app).get('/api/users').expect(200);
+                expect(res.body.users).toHaveLength(4);
             });
         });
     });
