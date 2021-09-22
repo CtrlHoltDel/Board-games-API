@@ -4,6 +4,7 @@ const request = require('supertest');
 
 const testData = require('../db/data/test-data/index.js');
 const seed = require('../db/seeds/seed.js');
+const { init } = require('../app.js');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -91,7 +92,49 @@ describe('Categories', () => {
                 });
             });
         });
-        describe('POST', () => {});
+        describe('POST', () => {
+            it('201: Returns the created category', async () => {
+                const { body } = await request(app)
+                    .post('/api/categories')
+                    .expect(201)
+                    .send({
+                        slug: 'legit_category_name',
+                        description: 'Description of the category',
+                    });
+
+                expect(body.category).toEqual({
+                    slug: 'legit_category_name',
+                    description: 'Description of the category',
+                });
+            });
+            it('400: Returns an error if passed an invalid body', async () => {
+                const expectedResult = {
+                    status: expect.any(Number),
+                    error: expect.any(String),
+                    format: expect.any(String),
+                    endpoint: expect.any(String),
+                };
+
+                const res1 = await request(app)
+                    .post('/api/categories')
+                    .expect(400)
+                    .send({
+                        incorrect_key_name: 'legit_category_name',
+                        incorrect_key_name: 'Description of the category',
+                    });
+
+                expect(res1.body.error).toMatchObject(expectedResult);
+                const res2 = await request(app)
+                    .post('/api/categories')
+                    .expect(400)
+                    .send({
+                        slug: 1,
+                        description: ['not a', 'string'],
+                    });
+
+                expect(res2.body.error).toMatchObject(expectedResult);
+            });
+        });
     });
 });
 

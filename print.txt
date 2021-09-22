@@ -1,4 +1,10 @@
 You are now connected to database "nc_games_test" as user "ctrlholtdel".
+ slug | description 
+------+-------------
+ name | description
+(1 row)
+
+INSERT 0 1
 
  CATEGORIES
        slug       |                     description                     
@@ -7,15 +13,11 @@ You are now connected to database "nc_games_test" as user "ctrlholtdel".
  social deduction | Players attempt to uncover each other's hidden role
  dexterity        | Games involving physical skill
  children's games | Games suitable for children
-(4 rows)
+ name             | description
+(5 rows)
 
 
  USERS
- username |                                avatar_url                                 | name 
-----------+---------------------------------------------------------------------------+------
- dav3rid  | https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png | dave
-(1 row)
-
     username     |                                avatar_url                                 |   name   
 -----------------+---------------------------------------------------------------------------+----------
  mallionaire     | https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg     | haz
