@@ -1,5 +1,5 @@
 const db = require('../db/connection');
-const { limitOffset } = require('../utils/utils');
+const { limitOffset, buildReviewQuery } = require('../utils/utils');
 const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
@@ -40,35 +40,13 @@ exports.updateVoteById = async (id, input) => {
 };
 
 exports.fetchAllReviews = async (queries) => {
-    const { limit, sort_by, order, category, p } = queries;
-
-    let ORDER = ` ORDER BY reviews.review_id desc`;
-    let WHERE = '';
+    const { limit, p } = queries;
 
     await validate.allReviews(queries);
 
-    if (order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
-    if (sort_by) {
-        let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
-        await validate.sortBy(column);
-        ORDER = ` ORDER BY ${column} ASC`;
-    }
-    if (category) {
-        const category = queries.category.replace('_', ' ');
-        WHERE = ` WHERE category = '${category}'`;
-    }
+    const { WHERE, queryBody } = await buildReviewQuery(queries);
+
     const { LIMIT, OFFSET } = limitOffset(limit, p);
-
-    const queryBody = `
-    SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(body) amount_of_comments FROM comments
-    FULL OUTER JOIN reviews
-    ON comments.review_id = reviews.review_id
-    ${WHERE}
-    GROUP BY title, owner, reviews.review_id
-    ${ORDER}
-    LIMIT $1 OFFSET $2
-    ;`;
-
     const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
     const { count } = allResults.rows[0];
 
@@ -132,11 +110,6 @@ exports.addReview = async ({
     category,
 }) => {
     const inputVariables = [title, review_body, designer, category, owner];
-
-    // inputVariables.forEach(async (variable) => {
-    //     if (!variable)
-    //         Promise.reject({ status: 400, error: 'Invalid key name' });
-    // });
 
     for (i = 0; i < inputVariables.length; i++) {
         if (!inputVariables[i] || typeof inputVariables[i] !== 'string')
