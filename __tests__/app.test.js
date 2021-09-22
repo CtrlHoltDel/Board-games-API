@@ -382,3 +382,25 @@ describe('Reviews', () => {
         });
     });
 });
+
+describe('Comments', () => {
+    describe('/api/comments/:comment_id', () => {
+        it('Returns no content and deletes based upon the id in the endpoint', async () => {
+            // body: 'My dog loved this game too!',
+            // votes: 13,
+            // author: 'mallionaire',
+            // review_id: 3,
+            // created_at: new Date(1610964545410),
+
+            const res = await request(app)
+                .delete('/api/comments/3')
+                .expect(204);
+
+            const { rows } = await db.query(
+                'SELECT author, review_id FROM comments WHERE review_id = 3;'
+            );
+
+            expect(rows).toHaveLength(1);
+        });
+    });
+});
