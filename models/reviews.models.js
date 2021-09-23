@@ -19,14 +19,13 @@ exports.fetchReviewById = async (id) => {
         return Promise.reject({
             status: 400,
             error: `No reviews with an id of ${id}`,
-            endpoint: '/api/reviews/:id',
         });
     return result.rows[0];
 };
 
 exports.updateVoteById = async (id, input) => {
-    await validate.id(id, '/api/reviews/:id');
-    await validate.voteIncrementer(input, '/api/reviews/:id');
+    await validate.id(id);
+    await validate.voteUpdater(input);
 
     const query = `
     UPDATE reviews
@@ -58,7 +57,6 @@ exports.fetchAllReviews = async (queries) => {
     if (rows.length === 0) {
         return Promise.reject({
             status: 404,
-            endpoint: '/api/reviews?category=query',
             error: 'Invalid query',
         });
     } else {
@@ -73,7 +71,7 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
 
     await validate.id(id, '/api/reviews/:id/comments');
     const queryBody = `
-                SELECT review_id, comment_id, votes, created_at, username, body FROM comments
+                SELECT comment_id, votes, created_at, username, body FROM comments
                 JOIN users
                 ON users.username = comments.author
                 WHERE review_id = $1
@@ -84,13 +82,13 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
         ? rows
         : Promise.reject({
               status: 404,
-              endpoint: '/api/reviews/:review_id/comments?limit=?&p=?',
               error: 'Invalid query',
           });
 };
 
 exports.addCommentToReview = async (id, { username, body }) => {
     await validate.addComment(username, body);
+    await validate.id(id);
 
     const queryBody = `INSERT INTO comments(author, review_id, created_at, body)
         VALUES ($1,$2,$3,$4)
@@ -120,7 +118,6 @@ exports.addReview = async ({
             return Promise.reject({
                 status: 400,
                 error: 'invalid key name or value',
-                endpoint: '/api/reviews',
             });
     }
 
@@ -143,7 +140,6 @@ exports.removeReview = async (id) => {
         return Promise.reject({
             status: 400,
             error: 'No reviews with this ID',
-            endpoint: '/api/reviews/:id',
         });
     }
 };

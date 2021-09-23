@@ -8,7 +8,6 @@ validate.allReviews = (queries) => {
     const validQueries = ['sort_by', 'order', 'category', 'limit', 'p'];
     const rejectObject = {
         status: 400,
-        endpoint: '/api/reviews?category=query',
         error: {
             valid_queries: validQueries,
         },
@@ -34,14 +33,13 @@ validate.allReviews = (queries) => {
     }
 };
 
-validate.voteIncrementer = (object, endpoint) => {
+validate.voteUpdater = (object) => {
     if (
         typeof object.inc_votes !== 'number' ||
         Object.keys(object).length !== 1
     ) {
         return Promise.reject({
             status: 400,
-            endpoint: endpoint,
             error: 'format to { inc_votes : number }',
         });
     }
@@ -74,17 +72,15 @@ validate.addComment = (username, body) => {
     if (typeof username !== 'string' || typeof body !== 'string') {
         return Promise.reject({
             status: 400,
-            endpoint: '/api/reviews/:id/comments',
             valid_format: `{ username: string, body: string}`,
         });
     }
 };
 
-validate.id = (id, endpoint) => {
+validate.id = (id) => {
     if (!Number(id)) {
         return Promise.reject({
             status: 404,
-            endpoint: endpoint,
             error: 'id must be a number',
         });
     }

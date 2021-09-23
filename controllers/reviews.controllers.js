@@ -24,8 +24,8 @@ exports.patchVoteById = async (req, res, next) => {
     const { body } = req;
 
     try {
-        const updated_review = await updateVoteById(id, body);
-        res.status(201).send({ updated_review });
+        const review = await updateVoteById(id, body);
+        res.status(201).send({ review });
     } catch (err) {
         next(err);
     }

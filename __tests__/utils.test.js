@@ -35,7 +35,7 @@ describe('Validation', () => {
     describe('Vote incrimenter', () => {
         it('Returns a rejected promise if passed an invalid vote', () => {
             return expect(
-                validate.voteIncrementer({ in_votes: 1 })
+                validate.voteUpdater({ in_votes: 1 })
             ).rejects.toEqual({
                 status: 400,
                 endpoint: '/api/reviews/:id',
@@ -43,7 +43,7 @@ describe('Validation', () => {
             });
         });
         it('Returns undefined when passed a valid vote', () => {
-            return expect(validate.voteIncrementer({ inc_votes: 5 })).toBe(
+            return expect(validate.voteUpdater({ inc_votes: 5 })).toBe(
                 undefined
             );
         });

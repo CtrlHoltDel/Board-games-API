@@ -10,16 +10,9 @@ exports.customError = (error, req, res, next) => {
 
 exports.pgErrors = (error, req, res, next) => {
     if (error.code === '23503') {
-        let error_info;
-        let error_char = error.detail
-            .match(/=\([a-zA-Z0-9-]+\)/g)[0]
-            .slice(2, -1);
-
-        error_info = /users/g.test(error.detail)
-            ? `User [${error_char}] doesn't exist`
-            : `Review with the ID [${error_char}] doesn't exist`;
-
-        res.status(400).send({ error: error_info });
+        let invalidQuery = error.detail.match(/\(\w+\)/)[0].slice(1, -1);
+        if (invalidQuery === 'author') invalidQuery = 'owner';
+        res.status(400).send({ error: `Invalid ${invalidQuery}` });
     } else {
         next(error);
     }
