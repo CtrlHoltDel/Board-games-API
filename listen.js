@@ -1,7 +1,10 @@
 const app = require('./app');
 
-const PORT = 2020;
+// const PORT = process.env.PORT || 4040;
 
-app.listen(PORT, () => {
+const { PORT = 4040 } = process.env;
+
+app.listen(PORT, (err) => {
+    if (err) throw err;
     console.log(`Connected at port ${PORT}`);
 });

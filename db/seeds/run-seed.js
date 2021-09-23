@@ -3,8 +3,8 @@ const testData = require('../data/test-data/index.js');
 const seed = require('./seed.js');
 const db = require('../connection.js');
 
-const runSeed = (dataType) => {
-    return seed(dataType).then(() => db.end());
+const runSeed = () => {
+    return seed(devData).then(() => db.end());
 };
 
-runSeed(testData);
+runSeed();

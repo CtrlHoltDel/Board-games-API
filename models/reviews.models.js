@@ -24,8 +24,7 @@ exports.fetchReviewById = async (id) => {
 };
 
 exports.amendVoteById = async (id, input) => {
-    await validate.id(id);
-    await validate.voteUpdater(input);
+    await Promise.all([validate.id(id), validate.voteUpdater(input)]);
 
     const query = `
     UPDATE reviews
