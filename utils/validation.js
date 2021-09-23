@@ -1,32 +1,36 @@
 const validate = {};
 
 validate.allReviews = (queries) => {
-    const queriesWhitelist = ['sort_by', 'order', 'category', 'limit', 'p'];
-    const currentKeys = Object.keys(queries);
+    //Check if there's an invalid query.
+    //Check if limit and p are just numbers
+    //check if order is either asc/desc
+
+    const validQueries = ['sort_by', 'order', 'category', 'limit', 'p'];
     const rejectObject = {
         status: 400,
         endpoint: '/api/reviews?category=query',
         error: {
-            valid_queries: ['sort_by', 'order', 'category', 'limit'],
+            valid_queries: validQueries,
         },
     };
 
-    for (let i = 0; i < currentKeys.length; i++) {
-        const key = currentKeys[i];
-        if (queriesWhitelist.indexOf(key) === -1) {
+    const keys = Object.keys(queries);
+
+    for (let i = 0; i < keys.length; i++) {
+        if (validQueries.indexOf(keys[i]) === -1)
             return Promise.reject(rejectObject);
-        }
-        if (key === 'order') {
-            queries[key] = queries[key].toLowerCase();
-            if (!(queries[key] === 'asc' || queries[key] === 'desc')) {
-                return Promise.reject(rejectObject);
-            }
-        }
-        if (key === 'limit') {
-            if (!Number(queries[key])) {
-                if (queries[key] !== '') return Promise.reject(rejectObject);
-            }
-        }
+    }
+
+    let { limit, order, p } = queries;
+
+    if ((limit && !Number(limit)) || (p && !Number(p))) {
+        return Promise.reject(rejectObject);
+    }
+
+    if (order) {
+        order = order.toLowerCase();
+        if (order !== 'asc' && order !== 'desc')
+            return Promise.reject(rejectObject);
     }
 };
 
@@ -60,14 +64,7 @@ validate.sortBy = (object) => {
             endpoint: '/api/reviews?sort_by=column_to_sort_by',
             error: {
                 invalid_column: object,
-                valid_columns: [
-                    'owner',
-                    'title',
-                    'review_id',
-                    'category',
-                    'votes',
-                    'comment_count',
-                ],
+                valid_columns: [...validColumns.slice(0, 5), 'comment_count'],
             },
         });
     }

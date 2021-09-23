@@ -401,6 +401,7 @@ describe('Reviews', () => {
                             'order',
                             'category',
                             'limit',
+                            'p',
                         ],
                     },
                     status: 400,
@@ -717,17 +718,29 @@ describe('Pagination', () => {
 
             expect(result2.body.reviews[0].review_id).toBe(7);
         });
-        it('400: Returns an error if something other than a number is passed to limit=', async () => {
-            const { body } = await request(app)
-                .get('/api/reviews?limit=not_a_number')
-                .expect(400);
-            expect(body.error).toEqual({
+        it('400: Returns an error if something other than a number is passed to limit= or p=', async () => {
+            const expectedError = {
                 status: 400,
                 endpoint: '/api/reviews?category=query',
                 error: {
-                    valid_queries: ['sort_by', 'order', 'category', 'limit'],
+                    valid_queries: [
+                        'sort_by',
+                        'order',
+                        'category',
+                        'limit',
+                        'p',
+                    ],
                 },
-            });
+            };
+            const result1 = await request(app)
+                .get('/api/reviews?limit=not_a_number')
+                .expect(400);
+            expect(result1.body.error).toEqual(expectedError);
+
+            const result2 = await request(app)
+                .get('/api/reviews?limit=2&p=not_a_number')
+                .expect(400);
+            expect(result2.body.error).toEqual(expectedError);
         });
         it('404: Returns an error if passed a page which contains no results', async () => {
             const { body } = await request(app)

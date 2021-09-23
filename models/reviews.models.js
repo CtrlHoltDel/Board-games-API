@@ -40,18 +40,21 @@ exports.updateVoteById = async (id, input) => {
 };
 
 exports.fetchAllReviews = async (queries) => {
+    //Get the limit and offset for pagination
     const { limit, p } = queries;
+    const { LIMIT, OFFSET } = limitOffset(limit, p);
 
+    //Validate limit, order, p
     await validate.allReviews(queries);
 
     const { WHERE, queryBody } = await buildReviewQuery(queries);
 
-    const { LIMIT, OFFSET } = limitOffset(limit, p);
+    //Get count of all currently selected results
     const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
     const { count } = allResults.rows[0];
 
+    //Get all results
     const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
-
     if (rows.length === 0) {
         return Promise.reject({
             status: 404,
