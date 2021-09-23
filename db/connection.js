@@ -5,6 +5,10 @@ require('dotenv').config({
     path: `${__dirname}/../.env.${ENV}`,
 });
 
+if (!process.env.PGDATABASE && !process.env.DATABASE_URL) {
+    throw new Error('PGDATABASE or DATABASE_URL not set');
+}
+
 const config =
     ENV === 'production'
         ? {
@@ -14,10 +18,6 @@ const config =
               },
           }
         : {};
-
-if (!process.env.PGDATABASE && !process.env.DATABASE_URL) {
-    throw new Error('PGDATABASE or DATABASE_URL not set');
-}
 
 console.log(`Currently connected database; \n${process.env.PGDATABASE}\n----`);
 

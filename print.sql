@@ -1,4 +1,7 @@
-\c nc_games_test;
+\c nc_games;
+
+-- DROP DATABASE IF EXISTS nc_games_test;
+-- DROP DATABASE IF EXISTS nc_games;
 
 -- DROP TABLE IF EXISTS comments;
 -- DROP TABLE IF EXISTS reviews;
