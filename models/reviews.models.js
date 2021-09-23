@@ -3,10 +3,10 @@ const { limitOffset, buildReviewQuery } = require('../utils/utils');
 const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
-    await validate.id(id, '/api/reviews/:id');
+    await validate.id(id);
 
     const query = `
-    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) FROM users
+    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS amount_of_comments FROM users
     JOIN reviews
     ON users.username = reviews.owner
     JOIN comments
@@ -69,7 +69,7 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
 
     const { LIMIT, OFFSET } = limitOffset(limit, p);
 
-    await validate.id(id, '/api/reviews/:id/comments');
+    await validate.id(id);
     const queryBody = `
                 SELECT comment_id, votes, created_at, username, body FROM comments
                 JOIN users

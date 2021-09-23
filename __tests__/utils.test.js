@@ -1,9 +1,5 @@
 const { objectToArray } = require('../db/utils/data-manipulation');
-// const {
-//     fetchAllReviewsValidate,
-//     formatCheckVote,
-//     validateSortBy,
-// } = require('../utils/validation');
+const { limitOffset } = require('../utils/utils');
 
 const validate = require('../utils/validation');
 
@@ -38,7 +34,6 @@ describe('Validation', () => {
                 validate.voteUpdater({ in_votes: 1 })
             ).rejects.toEqual({
                 status: 400,
-                endpoint: '/api/reviews/:id',
                 error: 'format to { inc_votes : number }',
             });
         });
@@ -50,9 +45,8 @@ describe('Validation', () => {
     });
     describe('All reviews', () => {
         const rejectedPromise = {
-            endpoint: '/api/reviews?category=query',
             error: {
-                valid_queries: ['sort_by', 'order', 'category'],
+                valid_queries: ['sort_by', 'order', 'category', 'limit', 'p'],
             },
             status: 400,
         };
@@ -96,7 +90,6 @@ describe('Validation', () => {
         it('When passed a sort_by with an invalid column query - returns an rejected promise with error', () => {
             expect(validate.sortBy('invalid_column_type')).rejects.toEqual({
                 status: 404,
-                endpoint: '/api/reviews?sort_by=column_to_sort_by',
                 error: {
                     invalid_column: 'invalid_column_type',
                     valid_columns: [
@@ -115,7 +108,6 @@ describe('Validation', () => {
         it('When passed a parameter with an invalid format, returns a rejected promise', () => {
             const expectedError = {
                 status: 400,
-                endpoint: '/api/reviews/:id/comments',
                 valid_format: `{ username: string, body: string}`,
             };
             expect(
@@ -129,6 +121,24 @@ describe('Validation', () => {
             expect(
                 validate.addComment('valid username', 'valid comment body')
             ).toBeUndefined();
+        });
+    });
+});
+
+describe('App utility', () => {
+    describe('Limit/offset', () => {
+        it('Returns the correct offset based upon page number', () => {
+            expect(limitOffset(5, 4)).toEqual({ LIMIT: 5, OFFSET: 15 });
+        });
+        it('Returns the correct limit and offset if limit or page number are undefined', () => {
+            expect(limitOffset(undefined, 4)).toEqual({
+                LIMIT: 10,
+                OFFSET: 30,
+            });
+            expect(limitOffset(undefined, undefined)).toEqual({
+                LIMIT: 10,
+                OFFSET: 0,
+            });
         });
     });
 });

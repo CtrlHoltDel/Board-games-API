@@ -2,7 +2,7 @@ const db = require('../db/connection');
 const validate = require('../utils/validation');
 
 exports.removeCommentById = async (id) => {
-    await validate.id(id, '/api/comments/comment_id');
+    await validate.id(id);
 
     const { rows } = await db.query(
         `SELECT * FROM comments WHERE comment_id = $1`,
@@ -13,7 +13,6 @@ exports.removeCommentById = async (id) => {
         return Promise.reject({
             status: 400,
             error: `No comment with an id of ${id}`,
-            endpoint: '/api/comments/comment_id',
         });
 
     const query_body = `DELETE FROM comments WHERE comment_id = $1;`;

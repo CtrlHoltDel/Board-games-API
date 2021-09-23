@@ -7,17 +7,11 @@ exports.fetchCategories = async () => {
 };
 
 exports.addCategory = async ({ slug, description }) => {
-    if (
-        !slug ||
-        !description ||
-        typeof slug !== 'string' ||
-        typeof description !== 'string'
-    ) {
+    if (typeof slug !== 'string' || typeof description !== 'string') {
         return Promise.reject({
             status: 400,
             error: `Invalid key name`,
             format: `{ slug: STRING, description: STRING }`,
-            endpoint: '/api/reviews/:id',
         });
     }
     const queryBody = `

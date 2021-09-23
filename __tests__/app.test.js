@@ -180,6 +180,7 @@ describe('Reviews', () => {
                     .get('/api/reviews/2')
                     .expect(200);
                 expect(body.review).toMatchObject({
+                    owner: expect.any(String),
                     title: expect.any(String),
                     review_id: expect.any(Number),
                     review_body: expect.any(String),
@@ -188,6 +189,7 @@ describe('Reviews', () => {
                     category: expect.any(String),
                     created_at: expect.any(String),
                     votes: expect.any(Number),
+                    amount_of_comments: expect.any(String),
                 });
             });
             it('404: Returns an error if passed a non-number as a parametric endpoint', async () => {
@@ -397,7 +399,6 @@ describe('Reviews', () => {
                     .expect(404);
                 expect(res.body.error).toEqual({
                     status: 404,
-                    endpoint: '/api/reviews?sort_by=column_to_sort_by',
                     error: {
                         invalid_column: 'not_real_column_name',
                         valid_columns: [
@@ -545,7 +546,6 @@ describe('Comments', () => {
                 expect(res.body.error).toEqual({
                     status: 400,
                     error: `No comment with an id of 3084`,
-                    endpoint: '/api/comments/comment_id',
                 });
             });
         });

@@ -59,7 +59,6 @@ validate.sortBy = (object) => {
     if (validColumns.indexOf(object) === -1) {
         return Promise.reject({
             status: 404,
-            endpoint: '/api/reviews?sort_by=column_to_sort_by',
             error: {
                 invalid_column: object,
                 valid_columns: [...validColumns.slice(0, 5), 'comment_count'],
