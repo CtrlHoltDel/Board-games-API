@@ -350,7 +350,7 @@ describe('Reviews', () => {
                     });
                 });
             });
-            it('200: Returns the list in ASC/DESC order when passed an order query', async () => {
+            it('200: Returns the list in ASC/DESC order of review_id when passed an order query', async () => {
                 const resAsc = await request(app)
                     .get('/api/reviews?order=asc')
                     .expect(200);
@@ -437,6 +437,7 @@ describe('Reviews', () => {
 
                 expect(test_result).toEqual(ordered);
             });
+
             it('404: Returns an error containing valid_columns when passed a sort_by with invalid column name', async () => {
                 const res = await request(app)
                     .get('/api/reviews?sort_by=not_real_column_name')
@@ -533,26 +534,26 @@ describe('Reviews', () => {
                 expect(rows[0].body).toBe('Test comment. Not too interesting.');
             });
             it("400: Returns an error if passed a user that doesn'nt exist", async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .post('/api/reviews/2/comments')
                     .expect(400)
                     .send({
                         username: 'non-existent-user',
                         body: "I'm not sure how i'm writing this comment. I don't exist",
                     });
-                expect(res.body.error).toEqual(
+                expect(body.error).toEqual(
                     `User [non-existent-user] doesn't exist`
                 );
             });
             it("400: Returns an error if passed an ID that doesn't relate to a review", async () => {
-                const res = await request(app)
+                const { body } = await request(app)
                     .post('/api/reviews/23/comments')
                     .expect(400)
                     .send({
                         username: 'bainesface',
                         body: 'This is the body of the comment',
                     });
-                expect(res.body.error).toEqual(
+                expect(body.error).toEqual(
                     "Review with the ID [23] doesn't exist"
                 );
             });

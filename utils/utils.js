@@ -12,20 +12,22 @@ exports.limitOffset = (limit, p) => {
     return { LIMIT, OFFSET };
 };
 
+//Check for SQL injection issues - everything should be filtered
 exports.buildReviewQuery = async (queries) => {
     const { order, sort_by, category } = queries;
-    let ORDER = ` ORDER BY reviews.review_id desc`;
     let WHERE = '';
+    let SORT_BY = 'review_id';
 
-    if (order) ORDER = ` ORDER BY reviews.review_id ${queries.order}`;
-    if (sort_by) {
-        let column = queries.sort_by === '' ? 'created_at' : queries.sort_by;
-        await validate.sortBy(column);
-        ORDER = ` ORDER BY ${column} ASC`;
-    }
     if (category) {
-        const category = queries.category.replace('_', ' ');
+        let category = queries.category.replace('_', ' ');
         WHERE = ` WHERE category = '${category}'`;
+    }
+
+    let ORDER = order ? order : 'desc';
+
+    if (sort_by) {
+        await validate.sortBy(sort_by);
+        SORT_BY = sort_by === '' ? 'created_at' : sort_by;
     }
 
     const queryBody = `
@@ -34,7 +36,7 @@ exports.buildReviewQuery = async (queries) => {
     ON comments.review_id = reviews.review_id
     ${WHERE}
     GROUP BY title, owner, reviews.review_id
-    ${ORDER}
+    ORDER BY ${SORT_BY} ${ORDER}
     LIMIT $1 OFFSET $2
     ;`;
 

@@ -53,7 +53,7 @@ exports.fetchAllReviews = async (queries) => {
     const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
     const { count } = allResults.rows[0];
 
-    //Get all results
+    //Get all results, rejected promise if there's no
     const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
     if (rows.length === 0) {
         return Promise.reject({
@@ -102,6 +102,7 @@ exports.addCommentToReview = async (id, { username, body }) => {
         new Date(),
         body,
     ]);
+
     return rows[0];
 };
 

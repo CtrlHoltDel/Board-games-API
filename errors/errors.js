@@ -9,9 +9,7 @@ exports.customError = (error, req, res, next) => {
 };
 
 exports.pgErrors = (error, req, res, next) => {
-    if (error.code === '22P02') {
-        res.status(400).send({ error: 'Error when accessing database' });
-    } else if (error.code === '23503') {
+    if (error.code === '23503') {
         let error_info;
         let error_char = error.detail
             .match(/=\([a-zA-Z0-9-]+\)/g)[0]
