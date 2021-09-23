@@ -14,7 +14,7 @@ exports.deleteCommentById = async (req, res, next) => {
     }
 };
 
-exports.patchVotesById = async (req, res, next) => {
+exports.patchCommentVote = async (req, res, next) => {
     const votes = req.body;
     const { comment_id } = req.params;
     try {

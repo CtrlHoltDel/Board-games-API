@@ -23,7 +23,7 @@ exports.fetchReviewById = async (id) => {
     return result.rows[0];
 };
 
-exports.updateVoteById = async (id, input) => {
+exports.amendVoteById = async (id, input) => {
     await validate.id(id);
     await validate.voteUpdater(input);
 
@@ -70,6 +70,7 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
     const { LIMIT, OFFSET } = limitOffset(limit, p);
 
     await validate.id(id);
+
     const queryBody = `
                 SELECT comment_id, votes, created_at, username, body FROM comments
                 JOIN users

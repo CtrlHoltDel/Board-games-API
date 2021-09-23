@@ -1,6 +1,6 @@
 const {
     fetchReviewById,
-    updateVoteById,
+    amendVoteById,
     fetchAllReviews,
     fetchCommentsByReviewId,
     addCommentToReview,
@@ -8,7 +8,7 @@ const {
     removeReview,
 } = require('../models/reviews.models');
 
-exports.getReviewById = async (req, res, next) => {
+exports.getSingleReview = async (req, res, next) => {
     const { id } = req.params;
 
     try {
@@ -19,12 +19,12 @@ exports.getReviewById = async (req, res, next) => {
     }
 };
 
-exports.patchVoteById = async (req, res, next) => {
+exports.patchReviewVote = async (req, res, next) => {
     const { id } = req.params;
     const { body } = req;
 
     try {
-        const review = await updateVoteById(id, body);
+        const review = await amendVoteById(id, body);
         res.status(201).send({ review });
     } catch (err) {
         next(err);
@@ -41,7 +41,7 @@ exports.getReviewList = async (req, res, next) => {
     }
 };
 
-exports.getCommentsByReviewId = async (req, res, next) => {
+exports.getAllComments = async (req, res, next) => {
     const { id } = req.params;
     const { query } = req;
     try {
@@ -52,7 +52,7 @@ exports.getCommentsByReviewId = async (req, res, next) => {
     }
 };
 
-exports.postCommentByReview = async (req, res, next) => {
+exports.postComment = async (req, res, next) => {
     const { body } = req;
     const { id } = req.params;
     try {

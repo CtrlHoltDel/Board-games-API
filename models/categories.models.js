@@ -2,8 +2,8 @@ const db = require('../db/connection');
 
 exports.fetchCategories = async () => {
     const query_body = 'SELECT * FROM categories;';
-    const categories = await db.query(query_body);
-    return categories.rows;
+    const { rows } = await db.query(query_body);
+    return rows;
 };
 
 exports.addCategory = async ({ slug, description }) => {
