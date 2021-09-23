@@ -19,6 +19,7 @@ const config =
           }
         : {};
 
+console.log(process.env.NODE_ENV, '<<<<<<< NODE_ENV');
 console.log(`Currently connected database; \n${process.env.PGDATABASE}\n----`);
 
 const db = new Pool(config);
