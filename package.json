@@ -4,7 +4,6 @@
     "description": "bc-nc-games",
     "main": "index.js",
     "scripts": {
-        "reset": "psql -f ./db/setup.sql && node ./db/seeds/reset.js",
         "print": "psql -f ./print.sql > ./print.txt",
         "setup-dbs": "psql -f ./db/setup.sql",
         "seed": "node ./db/seeds/run-seed.js",
