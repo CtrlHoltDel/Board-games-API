@@ -461,7 +461,7 @@ describe('Reviews', () => {
 
                 expect(res.body.error).toEqual(errorObject);
             });
-            it.only('201: Returns the sent comment after adding it to the database and adds it to the database.', async () => {
+            it('201: Returns the sent comment after adding it to the database and adds it to the database.', async () => {
                 const { body } = await request(app)
                     .post('/api/reviews/2/comments')
                     .expect(201)
