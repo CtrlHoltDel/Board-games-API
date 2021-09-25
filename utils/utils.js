@@ -9,8 +9,10 @@ exports.limitOffset = (limit, p) => {
 //Check for SQL injection issues - everything should be filtered
 exports.buildReviewQuery = async (queries) => {
     const { order, sort_by, category } = queries;
+
+    console.log(order, sort_by, category);
     let WHERE = '';
-    let SORT_BY = 'review_id';
+    let SORT_BY = 'created_at';
 
     if (category) {
         let category = queries.category.replace('_', ' ');
@@ -26,7 +28,7 @@ exports.buildReviewQuery = async (queries) => {
 
     const queryBody = `
     SELECT owner, title, reviews.review_id, category, review_img_url, reviews.created_at, reviews.votes, COUNT(body) amount_of_comments FROM comments
-    FULL OUTER JOIN reviews
+    RIGHT JOIN reviews
     ON comments.review_id = reviews.review_id
     ${WHERE}
     GROUP BY title, owner, reviews.review_id

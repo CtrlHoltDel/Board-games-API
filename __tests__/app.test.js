@@ -362,18 +362,27 @@ describe('Reviews', () => {
                     status: 400,
                 });
             });
-            it('200: Returns all reviews sorted by date if passed an empty sort_by query.', async () => {
-                const res = await request(app)
-                    .get('/api/reviews?sort_by')
+            it.only('200: Returns all reviews sorted by date if passed an empty sort_by query.', async () => {
+                const { body } = await request(app)
+                    .get('/api/reviews')
                     .expect(200);
 
-                const test_result = res.body.reviews.map(
-                    (review) => review.created_at
+                const test_result = body.reviews.map((review) =>
+                    new Date(review.created_at).toString()
                 );
 
-                const ordered = test_result.sort((x, y) => {
-                    return x - y;
+                console.log(typeof new Date(test_result[0]));
+
+                const ordered = [...test_result].sort((x, y) => {
+                    return new Date(y) - new Date(x);
                 });
+
+                console.log(test_result);
+                console.log(ordered);
+
+                // console.log(ordered);
+
+                // console.log(ordered, test_result);
 
                 expect(test_result).toEqual(ordered);
             });

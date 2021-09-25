@@ -51,6 +51,8 @@ exports.fetchAllReviews = async (queries) => {
     const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
     const { count } = allResults.rows[0];
 
+    console.log(queryBody);
+
     //Get all results, rejected promise if there's no
     const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
     if (rows.length === 0) {
