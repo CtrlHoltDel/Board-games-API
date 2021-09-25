@@ -6,16 +6,18 @@ exports.limitOffset = (limit, p) => {
     return { LIMIT, OFFSET };
 };
 
-//Check for SQL injection issues - everything should be filtered
 exports.buildReviewQuery = async (queries) => {
     const { order, sort_by, category } = queries;
 
+    console.log('test');
+
     let WHERE = '';
     let SORT_BY = 'created_at';
+    let cat = '';
 
     if (category) {
-        let category = queries.category.replace('_', ' ');
-        WHERE = ` WHERE category = '${category}'`;
+        cat = queries.category.replace('_', ' ');
+        WHERE = ` WHERE category = $3`;
     }
 
     let ORDER = order ? order : 'desc';
@@ -35,5 +37,7 @@ exports.buildReviewQuery = async (queries) => {
     LIMIT $1 OFFSET $2
     ;`;
 
-    return { WHERE, queryBody };
+    console.log(queryBody);
+
+    return { WHERE, queryBody, cat };
 };

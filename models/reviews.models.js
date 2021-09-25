@@ -1,3 +1,4 @@
+const { all } = require('../app');
 const db = require('../db/connection');
 const { limitOffset, buildReviewQuery } = require('../utils/utils');
 const validate = require('../utils/validation');
@@ -41,18 +42,33 @@ exports.fetchAllReviews = async (queries) => {
     //Get the limit and offset for pagination
     const { limit, p } = queries;
     const { LIMIT, OFFSET } = limitOffset(limit, p);
+    let count = 0;
 
     //Validate limit, order, p
     await validate.allReviews(queries);
 
-    const { WHERE, queryBody } = await buildReviewQuery(queries);
+    const { queryBody, cat } = await buildReviewQuery(queries);
 
     //Get count of all currently selected results
-    const allResults = await db.query(`SELECT COUNT(*) from reviews ${WHERE}`);
-    const { count } = allResults.rows[0];
+    if (cat === '') {
+        const allResults = await db.query(`SELECT COUNT(*) from reviews`);
+        count = allResults.rows[0].count;
+    } else {
+        const allResults = await db.query(
+            `SELECT COUNT(*) from reviews WHERE category = $1`,
+            [cat]
+        );
+        count = allResults.rows[0].count;
+    }
+
+    const queryArray = [LIMIT, OFFSET];
+
+    if (cat !== '') {
+        queryArray.push(cat);
+    }
 
     //Get all results, rejected promise if there's no
-    const { rows } = await db.query(queryBody, [LIMIT, OFFSET]);
+    const { rows } = await db.query(queryBody, queryArray);
     if (rows.length === 0) {
         return Promise.reject({
             status: 404,
