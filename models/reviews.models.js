@@ -22,7 +22,7 @@ exports.fetchReviewById = async (id) => {
     const result = await db.query(query, [id]);
     if (!result.rows[0])
         return Promise.reject({
-            status: 400,
+            status: 404,
             error: `No reviews with an id of ${id}`,
         });
     return result.rows[0];
@@ -38,8 +38,16 @@ exports.amendVoteById = async (id, input) => {
     RETURNING *;
     `;
 
-    const result = await db.query(query, [id]);
-    return result.rows[0];
+    const { rows } = await db.query(query, [id]);
+
+    if (rows.length === 0) {
+        return Promise.reject({
+            status: 404,
+            error: `No reviews with an id of ${id}`,
+        });
+    }
+
+    return rows[0];
 };
 
 exports.fetchAllReviews = async (queries) => {
@@ -80,12 +88,21 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
     await validate.id(id);
 
     const queryBody = `
-                SELECT comment_id, votes, created_at, username, body FROM comments
+                SELECT review_id,comment_id, votes, created_at, username, body FROM comments
                 JOIN users
                 ON users.username = comments.author
                 WHERE review_id = $1
                 LIMIT $2 OFFSET $3;`;
     const { rows } = await db.query(queryBody, [id, LIMIT, OFFSET]);
+
+    const body = await db.query(
+        `SELECT title FROM reviews WHERE review_id = $1`,
+        [id]
+    );
+
+    if (body.rows.length !== 0 && rows.length === 0) {
+        return rows;
+    }
 
     return rows.length !== 0
         ? rows
@@ -98,10 +115,21 @@ exports.fetchCommentsByReviewId = async (id, queries) => {
 exports.addCommentToReview = async (id, { username, body }) => {
     await validate.addComment(username, body);
     await validate.id(id);
-
     const queryBody = `INSERT INTO comments(author, review_id, created_at, body)
-        VALUES ($1,$2,$3,$4)
-        RETURNING *;`;
+    VALUES ($1,$2,$3,$4)
+    RETURNING *;`;
+
+    const user_test = await db.query(
+        `SELECT username FROM users WHERE username = $1`,
+        [username]
+    );
+
+    if (user_test.rows.length === 0) {
+        return Promise.reject({
+            status: 404,
+            error: 'username does not exist',
+        });
+    }
 
     const { rows } = await db.query(queryBody, [
         username,
@@ -121,7 +149,6 @@ exports.addReview = async ({
     category,
 }) => {
     const inputVariables = [title, review_body, designer, category, owner];
-
     for (i = 0; i < inputVariables.length; i++) {
         if (!inputVariables[i] || typeof inputVariables[i] !== 'string')
             return Promise.reject({

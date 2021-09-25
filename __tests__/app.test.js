@@ -172,9 +172,26 @@ describe('Reviews', () => {
                 expect(body.error).toEqual('Invalid owner');
             });
         });
-    });
-    describe('/api/reviews/:id', () => {
         describe('GET', () => {
+            it('200: returns an array of objects, including count property', async () => {
+                const { body } = await request(app)
+                    .get('/api/reviews')
+                    .expect(200);
+                expect(body.reviews[0]).toMatchObject({
+                    owner: expect.any(String),
+                    title: expect.any(String),
+                    review_id: expect.any(Number),
+                    review_body: expect.any(String),
+                    designer: expect.any(String),
+                    review_img_url: expect.any(String),
+                    category: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
+                    amount_of_comments: expect.any(String),
+                });
+
+                expect(body.count).toBe('13');
+            });
             it('200: Returns a review object with the correct properties', async () => {
                 const { body } = await request(app)
                     .get('/api/reviews/2')
@@ -192,30 +209,30 @@ describe('Reviews', () => {
                     amount_of_comments: expect.any(String),
                 });
             });
-            it('404: Returns an error if passed a non-number as a parametric endpoint', async () => {
+            it('400: Returns an error if passed a non-number as a parametric endpoint', async () => {
                 const { body } = await request(app)
                     .get('/api/reviews/not_a_number')
-                    .expect(404);
+                    .expect(400);
                 expect(body.error).toEqual({
-                    status: 404,
+                    status: 400,
                     error: 'id must be a number',
                 });
             });
-            it("400: Returns an error if passed a number which doesn't relate to a review", async () => {
+            it("404: Returns an error if passed a number which doesn't relate to a review", async () => {
                 const res = await request(app)
                     .get('/api/reviews/3434')
-                    .expect(400);
+                    .expect(404);
                 expect(res.body.error).toEqual({
-                    status: 400,
+                    status: 404,
                     error: 'No reviews with an id of 3434',
                 });
             });
         });
         describe('PATCH', () => {
-            it('201: Returns the updated item after incrimenting/decrimenting the vote', async () => {
+            it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/2')
-                    .expect(201)
+                    .expect(200)
                     .send({ inc_votes: 5 });
                 expect(res.body.review).toMatchObject({
                     review_id: expect.any(Number),
@@ -230,22 +247,33 @@ describe('Reviews', () => {
                 });
                 expect(res.body.review.votes).toBe(10);
             });
-            it('201: Also works with negative numbers', async () => {
+            it('200: Also works with negative numbers', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/2')
-                    .expect(201)
+                    .expect(200)
                     .send({ inc_votes: -20 });
 
                 expect(res.body.review.votes).toBe(-15);
             });
-            it('404: Returns an error if passed a non-number as a parametric endpoint.', async () => {
+            it('400: Returns an error if passed a non-number as a parametric endpoint.', async () => {
                 const res = await request(app)
                     .patch('/api/reviews/invalid_id')
-                    .expect(404);
+                    .expect(400);
+
+                expect(res.body.error).toEqual({
+                    status: 400,
+                    error: 'id must be a number',
+                });
+            });
+            it("404: Returns an error if passed a number ID that doesn't relate to a review", async () => {
+                const res = await request(app)
+                    .patch('/api/reviews/233')
+                    .expect(404)
+                    .send({ inc_votes: -20 });
 
                 expect(res.body.error).toEqual({
                     status: 404,
-                    error: 'id must be a number',
+                    error: 'No reviews with an id of 233',
                 });
             });
             it('400: Returns an error if passed an invalid object in the body.', async () => {
@@ -274,10 +302,10 @@ describe('Reviews', () => {
                 expect(result.rows).toHaveLength(0);
                 expect(comments.rows).toHaveLength(0);
             });
-            it('404: Returns an error if passed something that is not a number', async () => {
+            it('400: Returns an error if passed something that is not a number', async () => {
                 await request(app)
                     .delete('/api/reviews/not_a_number')
-                    .expect(404);
+                    .expect(400);
             });
             it("400: Returns an error if passed the id of a review that doesn'nt exist", async () => {
                 const { body } = await request(app)
@@ -308,16 +336,6 @@ describe('Reviews', () => {
                 });
             });
             it('200: Returns the list in ASC/DESC order of date when passed an order query', async () => {
-                // const resAsc = await request(app)
-                //     .get('/api/reviews?order=asc')
-                //     .expect(200);
-
-                // const ascOrder = [...resAsc.body.reviews].sort((x, y) => {
-                //     return new Date(x.created_at) - new Date(y.created_at);
-                // });
-
-                // expect(resAsc.body.reviews).toEqual(ascOrder);
-
                 const resDesc = await request(app)
                     .get('/api/reviews?order=desc')
                     .expect(200);
@@ -416,14 +434,14 @@ describe('Reviews', () => {
             });
         });
     });
-    describe('Reviews/:review_id/comments', () => {
+    describe('/api/reviews/:review_id/comments', () => {
         describe('GET', () => {
-            it('404: Returns an error if passed a non-number as a parametric endpoint', async () => {
+            it('400: Returns an error if passed a non-number as a parametric endpoint', async () => {
                 const response1 = await request(app)
                     .get('/api/reviews/not_a_number/comments')
-                    .expect(404);
+                    .expect(400);
                 expect(response1.body.error).toEqual({
-                    status: 404,
+                    status: 400,
                     error: 'id must be a number',
                 });
             });
@@ -432,6 +450,17 @@ describe('Reviews', () => {
                     .get('/api/reviews/2/comments')
                     .expect(200);
                 expect(res.body.reviews).toHaveLength(3);
+            });
+            it("404: Returns an error if passed an number id that doesn't exist", async () => {
+                const { body } = await request(app)
+                    .get('/api/reviews/23443/comments')
+                    .expect(404);
+                expect(body.error.error).toBe('Invalid query');
+            });
+            it('200: If the ID is valid but there is no comments', async () => {
+                const { body } = await request(app)
+                    .get('/api/reviews/1/comments')
+                    .expect(200);
             });
         });
         describe('POST', () => {
@@ -486,15 +515,15 @@ describe('Reviews', () => {
                 expect(rows.length).toBe(1);
                 expect(rows[0].body).toBe('Test comment. Not too interesting.');
             });
-            it("400: Returns an error if passed a user that does'nt exist", async () => {
+            it("404: Returns an error if passed a user that does'nt exist", async () => {
                 const { body } = await request(app)
                     .post('/api/reviews/2/comments')
-                    .expect(400)
+                    .expect(404)
                     .send({
                         username: 'non-existent-user',
                         body: "I'm not sure how i'm writing this comment. I don't exist",
                     });
-                expect(body.error).toEqual(`Invalid owner`);
+                expect(body.error.error).toEqual(`username does not exist`);
             });
             it("400: Returns an error if passed an ID that doesn't relate to a review", async () => {
                 const { body } = await request(app)
@@ -506,10 +535,10 @@ describe('Reviews', () => {
                     });
                 expect(body.error).toEqual('Invalid review_id');
             });
-            it("404: Returns an error if passed an ID that isn't a number", async () => {
+            it("400: Returns an error if passed an ID that isn't a number", async () => {
                 const { body } = await request(app)
                     .post('/api/reviews/word/comments')
-                    .expect(404)
+                    .expect(400)
                     .send({
                         username: 'bainesface',
                         body: 'This is the body of the comment',
@@ -532,21 +561,21 @@ describe('Comments', () => {
 
                 expect(rows).toHaveLength(0);
             });
-            it('404: Returns an error if passed a non-number ID', async () => {
+            it('400: Returns an error if passed a non-number ID', async () => {
                 const res = await request(app)
                     .delete('/api/comments/not_a_number')
-                    .expect(404);
-                expect(res.body.error).toEqual({
-                    status: 404,
-                    error: 'id must be a number',
-                });
-            });
-            it('400: Returns an error if passed a non-existent comment id', async () => {
-                const res = await request(app)
-                    .delete('/api/comments/3084')
                     .expect(400);
                 expect(res.body.error).toEqual({
                     status: 400,
+                    error: 'id must be a number',
+                });
+            });
+            it('404: Returns an error if passed a non-existent comment id', async () => {
+                const res = await request(app)
+                    .delete('/api/comments/3084')
+                    .expect(404);
+                expect(res.body.error).toEqual({
+                    status: 404,
                     error: `No comment with an id of 3084`,
                 });
             });
@@ -563,20 +592,26 @@ describe('Comments', () => {
                     error: 'format to { inc_votes : number }',
                 });
             });
-            it("404: Returns an error if endpoint isn't a number", async () => {
+            it("400: Returns an error if endpoint isn't a number", async () => {
                 const { body } = await request(app)
                     .patch('/api/comments/not_a_number')
-                    .expect(404);
+                    .expect(400);
 
                 expect(body.error).toEqual({
-                    status: 404,
+                    status: 400,
                     error: 'id must be a number',
                 });
             });
-            it('201: Returns the comment altered by the correct amount', async () => {
+            it('404: Returns an error if given a non-existent id', async () => {
+                await request(app)
+                    .patch('/api/comments/3948')
+                    .expect(404)
+                    .send({ inc_votes: 20 });
+            });
+            it('200: Returns the comment altered by the correct amount', async () => {
                 const { body } = await request(app)
                     .patch('/api/comments/3')
-                    .expect(201)
+                    .expect(200)
                     .send({ inc_votes: 20 });
 
                 expect(body.comment).toMatchObject({
@@ -584,10 +619,10 @@ describe('Comments', () => {
                     votes: 30,
                 });
             });
-            it('201: Also works with negative numbers', async () => {
+            it('200: Also works with negative numbers', async () => {
                 const { body } = await request(app)
                     .patch('/api/comments/3')
-                    .expect(201)
+                    .expect(200)
                     .send({ inc_votes: -20 });
 
                 expect(body.comment).toMatchObject({
@@ -600,7 +635,7 @@ describe('Comments', () => {
 });
 
 describe('Users', () => {
-    describe('/api/users/:username', () => {
+    describe('/api/users', () => {
         describe('GET', () => {
             it('200: Returns a full array of Users', async () => {
                 const { body } = await request(app)
@@ -631,7 +666,7 @@ describe('Users', () => {
 });
 
 describe('Pagination', () => {
-    describe('/api/reviews?limit=', () => {
+    describe('/api/reviews', () => {
         it('200: Returns a list of 10 items when not passed a query body', async () => {
             const { body } = await request(app).get('/api/reviews').expect(200);
             expect(body.reviews.length).toBe(10);
@@ -725,15 +760,15 @@ describe('Pagination', () => {
             expect(body.reviews).toHaveLength(3);
             expect(body.reviews[0].body === '9').toBeTruthy();
         });
-        it("400: Returns an error if passed a page number which doesn't exist", async () => {
-            const { body } = await request(app)
-                .get('/api/reviews/2/comments?p=3223')
-                .expect(404);
+        // it("400: Returns an error if passed a page number which doesn't exist", async () => {
+        //     const { body } = await request(app)
+        //         .get('/api/reviews/2/comments?p=3223')
+        //         .expect(404);
 
-            expect(body.error).toEqual({
-                status: 404,
-                error: 'Invalid query',
-            });
-        });
+        //     expect(body.error).toEqual({
+        //         status: 404,
+        //         error: 'Invalid query',
+        //     });
+        // });
     });
 });

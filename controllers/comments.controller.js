@@ -19,7 +19,7 @@ exports.patchCommentVote = async (req, res, next) => {
     const { comment_id } = req.params;
     try {
         const comment = await amendVotesById(votes, comment_id);
-        res.status(201).send({ comment });
+        res.status(200).send({ comment });
     } catch (err) {
         next(err);
     }

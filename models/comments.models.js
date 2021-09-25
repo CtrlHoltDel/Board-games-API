@@ -11,7 +11,7 @@ exports.removeCommentById = async (id) => {
 
     if (rows.length === 0)
         return Promise.reject({
-            status: 400,
+            status: 404,
             error: `No comment with an id of ${id}`,
         });
 
@@ -31,6 +31,10 @@ exports.amendVotesById = async (comment, id) => {
     `;
 
     const { rows } = await db.query(query_body, [id]);
+
+    if (rows.length === 0) {
+        return Promise.reject({ status: 404, error: 'non existent comment' });
+    }
 
     return rows[0];
 };

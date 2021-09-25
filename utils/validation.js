@@ -79,7 +79,7 @@ validate.addComment = (username, body) => {
 validate.id = (id) => {
     if (!Number(id)) {
         return Promise.reject({
-            status: 404,
+            status: 400,
             error: 'id must be a number',
         });
     }
