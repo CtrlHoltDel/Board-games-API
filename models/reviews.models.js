@@ -1,6 +1,10 @@
 const { all } = require('../app');
 const db = require('../db/connection');
-const { limitOffset, buildReviewQuery } = require('../utils/utils');
+const {
+    limitOffset,
+    buildReviewQuery,
+    amountOfReviews,
+} = require('../utils/utils');
 const validate = require('../utils/validation');
 
 exports.fetchReviewById = async (id) => {
@@ -42,28 +46,17 @@ exports.fetchAllReviews = async (queries) => {
     //Get the limit and offset for pagination
     const { limit, p } = queries;
     const { LIMIT, OFFSET } = limitOffset(limit, p);
-    let count = 0;
 
     //Validate limit, order, p
     await validate.allReviews(queries);
 
     const { queryBody, cat } = await buildReviewQuery(queries);
 
-    //Get count of all currently selected results
-    if (cat === '') {
-        const allResults = await db.query(`SELECT COUNT(*) from reviews`);
-        count = allResults.rows[0].count;
-    } else {
-        const allResults = await db.query(
-            `SELECT COUNT(*) from reviews WHERE category = $1`,
-            [cat]
-        );
-        count = allResults.rows[0].count;
-    }
+    const reviewCount = await amountOfReviews(cat);
 
     const queryArray = [LIMIT, OFFSET];
 
-    if (cat !== '') {
+    if (cat) {
         queryArray.push(cat);
     }
 
@@ -75,7 +68,7 @@ exports.fetchAllReviews = async (queries) => {
             error: 'Invalid query',
         });
     } else {
-        return { reviews: rows, count: count };
+        return { reviews: rows, count: reviewCount };
     }
 };
 

@@ -698,9 +698,7 @@ describe('Pagination', () => {
             expect(result2.body.error).toEqual(expectedError);
         });
         it('404: Returns an error if passed a page which contains no results', async () => {
-            const { body } = await request(app)
-                .get('/api/reviews?p=3')
-                .expect(404);
+            await request(app).get('/api/reviews?p=3').expect(404);
         });
     });
     describe('/api/reviews/:review_id/comments', () => {

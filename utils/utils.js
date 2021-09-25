@@ -1,3 +1,4 @@
+const db = require('../db/connection');
 const validate = require('./validation');
 
 exports.limitOffset = (limit, p) => {
@@ -9,11 +10,9 @@ exports.limitOffset = (limit, p) => {
 exports.buildReviewQuery = async (queries) => {
     const { order, sort_by, category } = queries;
 
-    console.log('test');
-
     let WHERE = '';
     let SORT_BY = 'created_at';
-    let cat = '';
+    let cat = undefined;
 
     if (category) {
         cat = queries.category.replace('_', ' ');
@@ -37,7 +36,18 @@ exports.buildReviewQuery = async (queries) => {
     LIMIT $1 OFFSET $2
     ;`;
 
-    console.log(queryBody);
-
     return { WHERE, queryBody, cat };
+};
+
+exports.amountOfReviews = async (category) => {
+    if (!category) {
+        const allResults = await db.query(`SELECT COUNT(*) from reviews`);
+        return allResults.rows[0].count;
+    } else {
+        const allResults = await db.query(
+            `SELECT COUNT(*) from reviews WHERE category = $1`,
+            [category]
+        );
+        return allResults.rows[0].count;
+    }
 };
