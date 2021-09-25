@@ -10,7 +10,6 @@ exports.limitOffset = (limit, p) => {
 exports.buildReviewQuery = async (queries) => {
     const { order, sort_by, category } = queries;
 
-    console.log(order, sort_by, category);
     let WHERE = '';
     let SORT_BY = 'created_at';
 

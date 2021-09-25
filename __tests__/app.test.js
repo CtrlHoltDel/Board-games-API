@@ -307,24 +307,26 @@ describe('Reviews', () => {
                     });
                 });
             });
-            it('200: Returns the list in ASC/DESC order of review_id when passed an order query', async () => {
-                const resAsc = await request(app)
-                    .get('/api/reviews?order=asc')
-                    .expect(200);
-                const asc = resAsc.body.reviews.map(
-                    (review) => review.review_id
-                );
-                const ascOrder = [...asc].sort((x, y) => x - y);
-                expect(asc).toEqual(ascOrder);
+            it('200: Returns the list in ASC/DESC order of date when passed an order query', async () => {
+                // const resAsc = await request(app)
+                //     .get('/api/reviews?order=asc')
+                //     .expect(200);
+
+                // const ascOrder = [...resAsc.body.reviews].sort((x, y) => {
+                //     return new Date(x.created_at) - new Date(y.created_at);
+                // });
+
+                // expect(resAsc.body.reviews).toEqual(ascOrder);
 
                 const resDesc = await request(app)
                     .get('/api/reviews?order=desc')
                     .expect(200);
-                const desc = resDesc.body.reviews.map(
-                    (review) => review.review_id
-                );
-                const descOrder = [...desc].sort((x, y) => y - x);
-                expect(desc).toEqual(descOrder);
+
+                const descOrder = [...resDesc.body.reviews].sort((x, y) => {
+                    return new Date(y.created_at) - new Date(x.created_at);
+                });
+
+                expect(resDesc.body.reviews).toEqual(descOrder);
             });
             it('200: Returns the a filtered list based upon given category', async () => {
                 const res = await request(app)
@@ -362,7 +364,7 @@ describe('Reviews', () => {
                     status: 400,
                 });
             });
-            it.only('200: Returns all reviews sorted by date if passed an empty sort_by query.', async () => {
+            it('200: Returns all reviews sorted by date if passed an empty sort_by query.', async () => {
                 const { body } = await request(app)
                     .get('/api/reviews')
                     .expect(200);
@@ -371,18 +373,9 @@ describe('Reviews', () => {
                     new Date(review.created_at).toString()
                 );
 
-                console.log(typeof new Date(test_result[0]));
-
                 const ordered = [...test_result].sort((x, y) => {
                     return new Date(y) - new Date(x);
                 });
-
-                console.log(test_result);
-                console.log(ordered);
-
-                // console.log(ordered);
-
-                // console.log(ordered, test_result);
 
                 expect(test_result).toEqual(ordered);
             });
@@ -671,15 +664,15 @@ describe('Pagination', () => {
 
             expect(result1.body.reviews[0]).toMatchObject({
                 owner: 'mallionaire',
-                title: 'One Night Ultimate Werewolf',
-                review_id: 8,
+                title: 'A truly Quacking Game; Quacks of Quedlinburg',
+                review_id: 9,
             });
 
             const result2 = await request(app)
                 .get('/api/reviews?limit=2&p=4')
                 .expect(200);
 
-            expect(result2.body.reviews[0].review_id).toBe(7);
+            expect(result2.body.reviews[0].review_id).toBe(10);
         });
         it('400: Returns an error if something other than a number is passed to limit= or p=', async () => {
             const expectedError = {

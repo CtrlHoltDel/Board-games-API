@@ -7,7 +7,7 @@
         "print": "psql -f ./print.sql > ./print.txt",
         "setup-dbs": "psql -f ./db/setup.sql",
         "seed": "node ./db/seeds/run-seed.js",
-        "test": "jest --verbose",
+        "test": "jest --verbose --watch",
         "start": "node listen.js",
         "seed:prod": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) npm run seed"
     },
