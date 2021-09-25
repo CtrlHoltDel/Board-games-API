@@ -19,10 +19,20 @@ exports.removeCommentById = async (id) => {
     await db.query(query_body, [id]);
 };
 
-exports.amendVotesById = async (comment, id) => {
-    await validate.id(id);
-    await validate.voteUpdater(comment);
+// const amendBodyById = async (id, edit) => {
+//     const query = `
+//         UPDATE reviews
+//         SET review_body = $1
+//         WHERE review_id = $2
+//         RETURNING *;
+//         `;
 
+//     const { rows } = await db.query(query, [edit, id]);
+
+//     return rows[0];
+// };
+
+const amendVoteById = async (id, comment) => {
     const query_body = `
     UPDATE comments
     SET votes = votes + ${comment.inc_votes}
@@ -37,4 +47,28 @@ exports.amendVotesById = async (comment, id) => {
     }
 
     return rows[0];
+};
+
+const amendBodyById = async (id, comment) => {
+    const query = `
+            UPDATE comments
+            SET body = $1
+            WHERE comment_id = $2
+            RETURNING *;
+            `;
+
+    const { rows } = await db.query(query, [comment, id]);
+
+    return rows[0];
+};
+
+exports.amendComment = async (comment, id) => {
+    await validate.id(id);
+    await validate.bodyPatch(comment);
+
+    if (comment.inc_votes !== undefined) {
+        return await amendVoteById(id, comment);
+    } else if (comment.edit !== undefined) {
+        return await amendBodyById(id, comment);
+    }
 };

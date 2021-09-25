@@ -229,62 +229,124 @@ describe('Reviews', () => {
             });
         });
         describe('PATCH', () => {
-            it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
-                const res = await request(app)
-                    .patch('/api/reviews/2')
-                    .expect(200)
-                    .send({ inc_votes: 5 });
-                expect(res.body.review).toMatchObject({
-                    review_id: expect.any(Number),
-                    title: expect.any(String),
-                    review_body: expect.any(String),
-                    designer: expect.any(String),
-                    review_img_url: expect.any(String),
-                    votes: expect.any(Number),
-                    category: expect.any(String),
-                    owner: expect.any(String),
-                    created_at: expect.any(String),
+            describe('Update vote', () => {
+                it('200: Returns the updated item after incrimenting/decrimenting the vote', async () => {
+                    const res = await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(200)
+                        .send({ inc_votes: 5 });
+                    expect(res.body.review).toMatchObject({
+                        review_id: expect.any(Number),
+                        title: expect.any(String),
+                        review_body: expect.any(String),
+                        designer: expect.any(String),
+                        review_img_url: expect.any(String),
+                        votes: expect.any(Number),
+                        category: expect.any(String),
+                        owner: expect.any(String),
+                        created_at: expect.any(String),
+                    });
+                    expect(res.body.review.votes).toBe(10);
                 });
-                expect(res.body.review.votes).toBe(10);
-            });
-            it('200: Also works with negative numbers', async () => {
-                const res = await request(app)
-                    .patch('/api/reviews/2')
-                    .expect(200)
-                    .send({ inc_votes: -20 });
+                it('200: Also works with negative numbers', async () => {
+                    const res = await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(200)
+                        .send({ inc_votes: -20 });
 
-                expect(res.body.review.votes).toBe(-15);
-            });
-            it('400: Returns an error if passed a non-number as a parametric endpoint.', async () => {
-                const res = await request(app)
-                    .patch('/api/reviews/invalid_id')
-                    .expect(400);
+                    expect(res.body.review.votes).toBe(-15);
+                });
+                it('400: Returns an error if passed a non-number as a parametric endpoint.', async () => {
+                    const res = await request(app)
+                        .patch('/api/reviews/invalid_id')
+                        .expect(400);
 
-                expect(res.body.error).toEqual({
-                    status: 400,
-                    error: 'id must be a number',
+                    expect(res.body.error).toEqual({
+                        status: 400,
+                        error: 'id must be a number',
+                    });
+                });
+                it("404: Returns an error if passed a number ID that doesn't relate to a review", async () => {
+                    const res = await request(app)
+                        .patch('/api/reviews/233')
+                        .expect(404)
+                        .send({ inc_votes: -20 });
+
+                    expect(res.body.error).toEqual({
+                        status: 404,
+                        error: 'No reviews with an id of 233',
+                    });
+                });
+                it('400: Returns an error if passed an invalid object in the body.', async () => {
+                    const res = await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(400)
+                        .send({ bad_key: 'not a number' });
+
+                    expect(res.body.error).toEqual({
+                        status: 400,
+                        error: 'format to { inc_votes : number }',
+                    });
                 });
             });
-            it("404: Returns an error if passed a number ID that doesn't relate to a review", async () => {
-                const res = await request(app)
-                    .patch('/api/reviews/233')
-                    .expect(404)
-                    .send({ inc_votes: -20 });
-
-                expect(res.body.error).toEqual({
-                    status: 404,
-                    error: 'No reviews with an id of 233',
+            describe('Update body', () => {
+                it('200: Returns the updated review object by given ID', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(200)
+                        .send({
+                            edit: 'This is the text I want the review comment to update to',
+                        });
+                    expect(body.review).toMatchObject({
+                        review_id: expect.any(Number),
+                        title: expect.any(String),
+                        review_body:
+                            'This is the text I want the review comment to update to',
+                        designer: expect.any(String),
+                        review_img_url: expect.any(String),
+                        votes: expect.any(Number),
+                        category: expect.any(String),
+                        owner: expect.any(String),
+                        created_at: expect.any(String),
+                    });
                 });
-            });
-            it('400: Returns an error if passed an invalid object in the body.', async () => {
-                const res = await request(app)
-                    .patch('/api/reviews/2')
-                    .expect(400)
-                    .send({ bad_key: 'not a number' });
-
-                expect(res.body.error).toEqual({
-                    status: 400,
-                    error: 'format to { inc_votes : number }',
+                it('400: Returns an error if passed an incorrect body', async () => {
+                    await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(400)
+                        .send({
+                            inc_votes:
+                                'This is the text I want the review comment to update to',
+                        });
+                    await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(400)
+                        .send({
+                            not_a_key:
+                                'This is the text I want the review comment to update to',
+                        });
+                });
+                it('200: Ignores surplus keys', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/reviews/2')
+                        .expect(200)
+                        .send({
+                            extra_key: 'This should be ignored',
+                            edit: 'This is the text I want the review comment to update to',
+                            this_is_extra: 'This should be ignored also',
+                        });
+                    expect(body.review).toMatchObject({
+                        review_id: expect.any(Number),
+                        title: expect.any(String),
+                        review_body:
+                            'This is the text I want the review comment to update to',
+                        designer: expect.any(String),
+                        review_img_url: expect.any(String),
+                        votes: expect.any(Number),
+                        category: expect.any(String),
+                        owner: expect.any(String),
+                        created_at: expect.any(String),
+                    });
                 });
             });
         });
@@ -581,55 +643,119 @@ describe('Comments', () => {
             });
         });
         describe('PATCH', () => {
-            it('400: Returns an error if given an incorrect body', async () => {
-                const { body } = await request(app)
-                    .patch('/api/comments/3')
-                    .expect(400)
-                    .send({ bad_key: 'not a number' });
+            describe('Update vote', () => {
+                it('400: Returns an error if given an incorrect body', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/comments/3')
+                        .expect(400)
+                        .send({ bad_key: 'not a number' });
 
-                expect(body.error).toEqual({
-                    status: 400,
-                    error: 'format to { inc_votes : number }',
+                    expect(body.error).toEqual({
+                        status: 400,
+                        error: 'format to { inc_votes : number }',
+                    });
+                });
+                it("400: Returns an error if endpoint isn't a number", async () => {
+                    const { body } = await request(app)
+                        .patch('/api/comments/not_a_number')
+                        .expect(400);
+
+                    expect(body.error).toEqual({
+                        status: 400,
+                        error: 'id must be a number',
+                    });
+                });
+                it('404: Returns an error if given a non-existent id', async () => {
+                    await request(app)
+                        .patch('/api/comments/3948')
+                        .expect(404)
+                        .send({ inc_votes: 20 });
+                });
+                it('200: Returns the comment altered by the correct amount', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/comments/3')
+                        .expect(200)
+                        .send({ inc_votes: 20 });
+
+                    expect(body.comment).toMatchObject({
+                        body: "I didn't know dogs could play games",
+                        votes: 30,
+                    });
+                });
+                it('200: Also works with negative numbers', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/comments/3')
+                        .expect(200)
+                        .send({ inc_votes: -20 });
+
+                    expect(body.comment).toMatchObject({
+                        body: "I didn't know dogs could play games",
+                        votes: -10,
+                    });
                 });
             });
-            it("400: Returns an error if endpoint isn't a number", async () => {
-                const { body } = await request(app)
-                    .patch('/api/comments/not_a_number')
-                    .expect(400);
+            describe('Update body', () => {
+                it('200: Returns the updated comment object by given ID', async () => {
+                    const { body } = await request(app)
+                        .patch('/api/comments/3')
+                        .expect(200)
+                        .send({ edit: 'This is the updated text' });
 
-                expect(body.error).toEqual({
-                    status: 400,
-                    error: 'id must be a number',
+                    expect(body.comment).toMatchObject({
+                        comment_id: 3,
+                        author: 'philippaclaire9',
+                        review_id: 3,
+                        votes: 10,
+                        created_at: '2021-01-18T10:09:48.110Z',
+                        body: '{"edit":"This is the updated text"}',
+                    });
+                });
+                it('400: Returns an error if passed an incorrect body', async () => {
+                    await request(app)
+                        .patch('/api/comments/3')
+                        .expect(400)
+                        .send({ wrong: 'This is the updated text' });
+
+                    await request(app)
+                        .patch('/api/comments/3')
+                        .expect(400)
+                        .send({ edit: 233 });
+                });
+                it('200: Ignores surplus keys', async () => {
+                    await request(app)
+                        .patch('/api/comments/3')
+                        .expect(200)
+                        .send({
+                            an_extra_key: 'this is an extra key',
+                            edit: 'This is the updated text',
+                            should_be_ignored: 111,
+                        });
                 });
             });
-            it('404: Returns an error if given a non-existent id', async () => {
-                await request(app)
-                    .patch('/api/comments/3948')
-                    .expect(404)
-                    .send({ inc_votes: 20 });
-            });
-            it('200: Returns the comment altered by the correct amount', async () => {
-                const { body } = await request(app)
-                    .patch('/api/comments/3')
-                    .expect(200)
-                    .send({ inc_votes: 20 });
 
-                expect(body.comment).toMatchObject({
-                    body: "I didn't know dogs could play games",
-                    votes: 30,
-                });
-            });
-            it('200: Also works with negative numbers', async () => {
-                const { body } = await request(app)
-                    .patch('/api/comments/3')
-                    .expect(200)
-                    .send({ inc_votes: -20 });
-
-                expect(body.comment).toMatchObject({
-                    body: "I didn't know dogs could play games",
-                    votes: -10,
-                });
-            });
+            //     it('200: Ignores surplus keys', async () => {
+            //         const { body } = await request(app)
+            //             .patch('/api/reviews/2')
+            //             .expect(200)
+            //             .send({
+            //                 extra_key: 'This should be ignored',
+            //                 edit: 'This is the text I want the review comment to update to',
+            //                 this_is_extra: 'This should be ignored also',
+            //             });
+            //         expect(body.review).toMatchObject({
+            //             review_id: expect.any(Number),
+            //             title: expect.any(String),
+            //             review_body:
+            //                 'This is the text I want the review comment to update to',
+            //             designer: expect.any(String),
+            //             review_img_url: expect.any(String),
+            //             votes: expect.any(Number),
+            //             category: expect.any(String),
+            //             owner: expect.any(String),
+            //             created_at: expect.any(String),
+            //         });
+            //     });
+            // });
         });
     });
 });

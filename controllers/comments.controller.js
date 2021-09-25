@@ -1,6 +1,6 @@
 const {
     removeCommentById,
-    amendVotesById,
+    amendComment,
 } = require('../models/comments.models');
 
 exports.deleteCommentById = async (req, res, next) => {
@@ -14,11 +14,11 @@ exports.deleteCommentById = async (req, res, next) => {
     }
 };
 
-exports.patchCommentVote = async (req, res, next) => {
+exports.patchComment = async (req, res, next) => {
     const votes = req.body;
     const { comment_id } = req.params;
     try {
-        const comment = await amendVotesById(votes, comment_id);
+        const comment = await amendComment(votes, comment_id);
         res.status(200).send({ comment });
     } catch (err) {
         next(err);

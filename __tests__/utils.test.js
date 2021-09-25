@@ -137,17 +137,13 @@ describe('Seed tests', () => {
 describe('Validation', () => {
     describe('Vote incrimenter', () => {
         it('Returns a rejected promise if passed an invalid vote', () => {
-            return expect(
-                validate.voteUpdater({ in_votes: 1 })
-            ).rejects.toEqual({
+            return expect(validate.bodyPatch({ in_votes: 1 })).rejects.toEqual({
                 status: 400,
                 error: 'format to { inc_votes : number }',
             });
         });
         it('Returns undefined when passed a valid vote', () => {
-            return expect(validate.voteUpdater({ inc_votes: 5 })).toBe(
-                undefined
-            );
+            return expect(validate.bodyPatch({ inc_votes: 5 })).toBe(undefined);
         });
     });
     describe('All reviews', () => {

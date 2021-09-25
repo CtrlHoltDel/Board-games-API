@@ -28,12 +28,10 @@ exports.fetchReviewById = async (id) => {
     return result.rows[0];
 };
 
-exports.amendVoteById = async (id, input) => {
-    await Promise.all([validate.id(id), validate.voteUpdater(input)]);
-
+const amendVoteById = async (id, amount) => {
     const query = `
     UPDATE reviews
-    SET votes = votes + ${input.inc_votes}
+    SET votes = votes + ${amount}
     WHERE review_id = $1
     RETURNING *;
     `;
@@ -48,6 +46,32 @@ exports.amendVoteById = async (id, input) => {
     }
 
     return rows[0];
+};
+
+const amendBodyById = async (id, edit) => {
+    const query = `
+        UPDATE reviews
+        SET review_body = $1
+        WHERE review_id = $2
+        RETURNING *;
+        `;
+
+    const { rows } = await db.query(query, [edit, id]);
+
+    return rows[0];
+};
+
+exports.amendReview = async (id, input) => {
+    await validate.id(id);
+    await validate.bodyPatch(input);
+
+    if (input.inc_votes !== undefined) {
+        return await amendVoteById(id, input.inc_votes);
+    }
+
+    if (input.edit !== undefined) {
+        return await amendBodyById(id, input.edit);
+    }
 };
 
 exports.fetchAllReviews = async (queries) => {

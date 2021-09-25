@@ -132,8 +132,10 @@ exports.endPoints = {
         },
     },
     'PATCH /api/reviews/:review_id': {
-        description: 'Amends a given reviews votes based upon review ID',
-        exampleBody: { inc_votes: 1 },
+        description:
+            'Either amends the votes or review body - dependant on passed object. Attempting to update both simultaneously will only update the vote.',
+        exampleBody_votes: { inc_votes: 1 },
+        exampleBody_edit: { edit: 'New Review text' },
         exampleResponse: {
             review: {
                 review_id: 2,
@@ -151,8 +153,10 @@ exports.endPoints = {
         },
     },
     'PATCH /api/comments/:comment_id': {
-        description: 'Amends a given comments votes based upon comment ID',
-        exampleBody: { inc_votes: -25 },
+        description:
+            'Either amends the votes or comment body. Attempting to update both simultaneously will only update the vote.',
+        exampleBody_votes: { inc_votes: -25 },
+        exampleBody_edit: { edit: 'New comment text.' },
         exampleResponse: {
             comment: {
                 comment_id: 2,

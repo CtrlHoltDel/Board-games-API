@@ -33,10 +33,10 @@ validate.allReviews = (queries) => {
     }
 };
 
-validate.voteUpdater = (object) => {
+validate.bodyPatch = (object) => {
     if (
-        typeof object.inc_votes !== 'number' ||
-        Object.keys(object).length !== 1
+        typeof object.inc_votes !== 'number' &&
+        typeof object.edit !== 'string'
     ) {
         return Promise.reject({
             status: 400,

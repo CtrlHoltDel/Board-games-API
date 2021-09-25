@@ -1,6 +1,6 @@
 const {
     getSingleReview,
-    patchReviewVote,
+    patchReview,
     getReviewList,
     getAllComments,
     postComment,
@@ -15,7 +15,7 @@ reviewsRouter.route('/:id/comments').get(getAllComments).post(postComment);
 reviewsRouter
     .route('/:id')
     .get(getSingleReview)
-    .patch(patchReviewVote)
+    .patch(patchReview)
     .delete(delReview);
 
 module.exports = reviewsRouter;
