@@ -461,8 +461,8 @@ describe('Reviews', () => {
 
                 expect(res.body.error).toEqual(errorObject);
             });
-            it('201: Returns the sent comment after adding it to the database and adds it to the database.', async () => {
-                const res = await request(app)
+            it.only('201: Returns the sent comment after adding it to the database and adds it to the database.', async () => {
+                const { body } = await request(app)
                     .post('/api/reviews/2/comments')
                     .expect(201)
                     .send({
@@ -470,7 +470,7 @@ describe('Reviews', () => {
                         body: 'Test comment. Not too interesting.',
                     });
 
-                expect(res.body.comment).toMatchObject({
+                expect(body.comment).toMatchObject({
                     comment_id: expect.any(Number),
                     author: expect.any(String),
                     review_id: expect.any(Number),
@@ -579,12 +579,8 @@ describe('Comments', () => {
                     .expect(201)
                     .send({ inc_votes: 20 });
 
-                expect(body.comment).toEqual({
-                    author: 'philippaclaire9',
+                expect(body.comment).toMatchObject({
                     body: "I didn't know dogs could play games",
-                    comment_id: 3,
-                    created_at: '2021-01-18T00:00:00.000Z',
-                    review_id: 3,
                     votes: 30,
                 });
             });
@@ -594,12 +590,8 @@ describe('Comments', () => {
                     .expect(201)
                     .send({ inc_votes: -20 });
 
-                expect(body.comment).toEqual({
-                    author: 'philippaclaire9',
+                expect(body.comment).toMatchObject({
                     body: "I didn't know dogs could play games",
-                    comment_id: 3,
-                    created_at: '2021-01-18T00:00:00.000Z',
-                    review_id: 3,
                     votes: -10,
                 });
             });
