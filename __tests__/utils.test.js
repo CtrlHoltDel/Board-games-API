@@ -183,7 +183,7 @@ describe('Validation', () => {
                 'review_id',
                 'category',
                 'votes',
-                'amount_of_comments',
+                'comment_count',
             ];
 
             validColumns.forEach((column) => {

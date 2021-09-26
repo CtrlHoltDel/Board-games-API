@@ -52,7 +52,7 @@ validate.sortBy = (object) => {
         'review_id',
         'category',
         'votes',
-        'amount_of_comments',
+        'comment_count',
         'created_at',
     ];
 

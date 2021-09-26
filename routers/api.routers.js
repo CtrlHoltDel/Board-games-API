@@ -1,6 +1,5 @@
 const apiRouter = require('express').Router();
 
-// const { listOfAPIs } = require('../controllers/api.controllers');
 const { endPoints } = require('../endpoints');
 
 const {

@@ -11,7 +11,7 @@ exports.fetchReviewById = async (id) => {
     await validate.id(id);
 
     const query = `
-    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS amount_of_comments FROM users
+    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS comment_count FROM users
     JOIN reviews
     ON users.username = reviews.owner
     JOIN comments
@@ -75,11 +75,9 @@ exports.amendReview = async (id, input) => {
 };
 
 exports.fetchAllReviews = async (queries) => {
-    //Get the limit and offset for pagination
     const { limit, p } = queries;
     const { LIMIT, OFFSET } = limitOffset(limit, p);
 
-    //Validate limit, order, p
     await validate.allReviews(queries);
 
     const { queryBody, cat } = await buildReviewQuery(queries);
@@ -92,7 +90,6 @@ exports.fetchAllReviews = async (queries) => {
         queryArray.push(cat);
     }
 
-    //Get all results, rejected promise if there's no
     const { rows } = await db.query(queryBody, queryArray);
     if (rows.length === 0) {
         return Promise.reject({

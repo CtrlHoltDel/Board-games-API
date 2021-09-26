@@ -173,7 +173,7 @@ describe('Reviews', () => {
             });
         });
         describe('GET', () => {
-            it('200: returns an array of objects, including count property', async () => {
+            it.only('200: returns an array of objects, including count property', async () => {
                 const { body } = await request(app)
                     .get('/api/reviews')
                     .expect(200);
@@ -187,7 +187,7 @@ describe('Reviews', () => {
                     category: expect.any(String),
                     created_at: expect.any(String),
                     votes: expect.any(Number),
-                    amount_of_comments: expect.any(String),
+                    comment_count: expect.any(String),
                 });
 
                 expect(body.count).toBe('13');
@@ -206,7 +206,7 @@ describe('Reviews', () => {
                     category: expect.any(String),
                     created_at: expect.any(String),
                     votes: expect.any(Number),
-                    amount_of_comments: expect.any(String),
+                    comment_count: expect.any(String),
                 });
             });
             it('400: Returns an error if passed a non-number as a parametric endpoint', async () => {
@@ -393,7 +393,7 @@ describe('Reviews', () => {
                         review_img_url: expect.any(String),
                         created_at: expect.any(String),
                         votes: expect.any(Number),
-                        amount_of_comments: expect.any(String),
+                        comment_count: expect.any(String),
                     });
                 });
             });
@@ -461,11 +461,11 @@ describe('Reviews', () => {
             });
             it('200: Returns a list of reviews sorted by column when passed that column as a query', async () => {
                 const res = await request(app)
-                    .get('/api/reviews?sort_by=amount_of_comments')
+                    .get('/api/reviews?sort_by=comment_count')
                     .expect(200);
 
                 const test_result = res.body.reviews.map(
-                    (review) => review.amount_of_comments
+                    (review) => review.comment_count
                 );
 
                 const ordered = test_result.sort((x, y) => {
@@ -732,30 +732,6 @@ describe('Comments', () => {
                         });
                 });
             });
-
-            //     it('200: Ignores surplus keys', async () => {
-            //         const { body } = await request(app)
-            //             .patch('/api/reviews/2')
-            //             .expect(200)
-            //             .send({
-            //                 extra_key: 'This should be ignored',
-            //                 edit: 'This is the text I want the review comment to update to',
-            //                 this_is_extra: 'This should be ignored also',
-            //             });
-            //         expect(body.review).toMatchObject({
-            //             review_id: expect.any(Number),
-            //             title: expect.any(String),
-            //             review_body:
-            //                 'This is the text I want the review comment to update to',
-            //             designer: expect.any(String),
-            //             review_img_url: expect.any(String),
-            //             votes: expect.any(Number),
-            //             category: expect.any(String),
-            //             owner: expect.any(String),
-            //             created_at: expect.any(String),
-            //         });
-            //     });
-            // });
         });
     });
 });

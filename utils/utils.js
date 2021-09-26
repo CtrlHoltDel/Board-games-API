@@ -27,7 +27,7 @@ exports.buildReviewQuery = async (queries) => {
     }
 
     const queryBody = `
-    SELECT owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS amount_of_comments FROM comments
+    SELECT owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS comment_count FROM comments
     RIGHT JOIN reviews
     ON comments.review_id = reviews.review_id
     ${WHERE}
