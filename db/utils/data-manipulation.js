@@ -39,8 +39,6 @@ exports.objectToArray = (objects, type) => {
             const { username, name, avatar_url } = object;
             returnArray.push([username, name, avatar_url]);
         });
-    } else {
-        // throw new Error('type is a required parameter');
     }
 
     return returnArray;

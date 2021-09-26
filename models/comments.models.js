@@ -19,19 +19,6 @@ exports.removeCommentById = async (id) => {
     await db.query(query_body, [id]);
 };
 
-// const amendBodyById = async (id, edit) => {
-//     const query = `
-//         UPDATE reviews
-//         SET review_body = $1
-//         WHERE review_id = $2
-//         RETURNING *;
-//         `;
-
-//     const { rows } = await db.query(query, [edit, id]);
-
-//     return rows[0];
-// };
-
 const amendVoteById = async (id, comment) => {
     const query_body = `
     UPDATE comments

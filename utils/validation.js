@@ -1,10 +1,6 @@
 const validate = {};
 
 validate.allReviews = (queries) => {
-    //Check if there's an invalid query.
-    //Check if limit and p are just numbers
-    //check if order is either asc/desc
-
     const validQueries = ['sort_by', 'order', 'category', 'limit', 'p'];
     const rejectObject = {
         status: 400,
