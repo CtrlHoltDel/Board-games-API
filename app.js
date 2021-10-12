@@ -1,11 +1,14 @@
 const express = require('express');
 const {
-    missingPath,
-    customError,
-    serverError,
-    pgErrors,
+  missingPath,
+  customError,
+  serverError,
+  pgErrors,
 } = require('./errors/errors');
 const apiRouter = require('./routers/api.routers');
+const cors = require('cors');
+
+app.use(cors());
 
 const app = express();
 
