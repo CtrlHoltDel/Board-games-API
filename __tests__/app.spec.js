@@ -14,7 +14,7 @@ describe('/', () => {
       const {
         body: { error },
       } = await request(app).get('/invalid_link').expect(404);
-      expect(error).toBe('Not found');
+      expect(error.message).toBe('Not found');
     });
   });
 });
@@ -50,8 +50,50 @@ describe('/api/reviews/:review_id', () => {
       const {
         body: { review },
       } = await request(app).get('/api/reviews/1').expect(200);
-      console.log(review);
+      expect(review).toMatchObject({
+        review_id: expect.any(Number),
+        title: expect.any(String),
+        review_body: expect.any(String),
+        designer: expect.any(String),
+        review_img_url: expect.any(String),
+        votes: expect.any(Number),
+        category: expect.any(String),
+        owner: expect.any(String),
+        created_at: expect.any(String),
+        comment_count: expect.any(Number),
+        likes: expect.any(Number),
+      });
     });
-    it("400: Responds with an error if passed an id that isn't an integer", async () => {});
+    it("400: Responds with an error if passed an id that isn't an integer", async () => {
+      const {
+        body: { error },
+      } = await request(app).get('/api/reviews/not_a_number').expect(400);
+
+      expect(error.message).toBe('Bad request');
+    });
+    it('404: Responds with an error if passed the ID of a non-existent review', async () => {
+      const {
+        body: { error },
+      } = await request(app).get('/api/reviews/23983').expect(404);
+
+      expect(error.message).toBe('Non-existent review');
+    });
+  });
+  describe('PATCH', () => {
+    it('200: Responds with the updated review object', async () => {
+      const { body: increase } = await request(app)
+        .patch('/api/reviews/2')
+        .send({ inc_votes: 1 })
+        .expect(200);
+
+      expect(increase.review.votes).toBe(6);
+
+      const { body: decrease } = await request(app)
+        .patch('/api/reviews/2')
+        .send({ inc_votes: -5 })
+        .expect(200);
+
+      expect(decrease.review.votes).toBe(1);
+    });
   });
 });

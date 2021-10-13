@@ -1,5 +1,18 @@
-const invalidEndpoint = (req, res) => {
-  res.status(404).send({ error: 'Not found' });
+exports.invalidEndpoint = (req, res) => {
+  res.status(404).send({ error: { message: 'Not found' } });
 };
 
-module.exports = { invalidEndpoint };
+exports.customError = (error, req, res, next) => {
+  if (error.status === 400 || error.status === 404) {
+    res.status(error.status).send({ error });
+  } else {
+    next(error);
+  }
+};
+
+exports.serverError = (err, req, res) => {
+  console.log(err, '<< Uncaught error');
+  res.status(500);
+};
+
+// module.exports = { invalidEndpoint };
