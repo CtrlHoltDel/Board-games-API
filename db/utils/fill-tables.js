@@ -49,6 +49,6 @@ exports.fillTables = async ({
   );
 
   await db.query(
-    insertData('review_likes', ['username', 'liked_review'], userLikesData)
+    insertData('review_likes', ['username', 'review_id'], userLikesData)
   );
 };

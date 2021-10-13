@@ -44,11 +44,11 @@ exports.createTables = async () => {
   const reviewLikes = `CREATE TABLE review_likes (
     rl_p_key SERIAL PRIMARY KEY,
     username VARCHAR REFERENCES users(username) ON DELETE CASCADE,
-    liked_review INT REFERENCES reviews(review_id) ON DELETE CASCADE
+    review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE
   );
   
   ALTER TABLE review_likes
-  ADD CONSTRAINT unique_user_like UNIQUE (username, liked_review)`;
+  ADD CONSTRAINT unique_user_like UNIQUE (username, review_id)`;
 
   const tables = [categories, users, reviews, comments, reviewLikes];
 

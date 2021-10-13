@@ -129,10 +129,10 @@ describe('Seed tests', () => {
       const testData = [
         {
           username: 'test_user_1',
-          liked_review: 3,
+          review_id: 3,
         },
         {
-          liked_review: 1,
+          review_id: 1,
           username: 'test_user_2',
         },
       ];
