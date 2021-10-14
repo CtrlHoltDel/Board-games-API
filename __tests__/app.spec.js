@@ -71,7 +71,7 @@ describe('/api/reviews/:review_id', () => {
 
       expect(error.message).toBe('Bad request');
     });
-    it('404: Responds with an error if passed the ID of a non-existent review', async () => {
+    it("404: Responds with an error if passed the ID that doesn't relate toa  review", async () => {
       const {
         body: { error },
       } = await request(app).get('/api/reviews/23983').expect(404);
@@ -94,6 +94,54 @@ describe('/api/reviews/:review_id', () => {
         .expect(200);
 
       expect(decrease.review.votes).toBe(1);
+    });
+    it("400: Responds with an error if passed an id that isn't an integer", async () => {
+      const {
+        body: { error },
+      } = await request(app)
+        .patch('/api/reviews/not_an_integer')
+        .send({ inc_votes: 1 })
+        .expect(400);
+
+      expect(error.message).toBe('Bad request');
+    });
+    it("404: Responds with an error if passed an id that doesn't relate to a review", async () => {
+      const {
+        body: { error },
+      } = await request(app)
+        .patch('/api/reviews/923897')
+        .send({ inc_votes: 1 })
+        .expect(404);
+
+      expect(error.message).toBe('Non-existent review');
+    });
+    it('400: Responds with an error if passed an invalid body', async () => {
+      const {
+        body: { error },
+      } = await request(app)
+        .patch('/api/reviews/3')
+        .send({ incorrect_body: 1 })
+        .expect(400);
+
+      expect(error.message).toBe('Invalid body');
+
+      const {
+        body: { incorrectValue = error },
+      } = await request(app)
+        .patch('/api/reviews/3')
+        .send({ inc_votes: 'incorrect value' })
+        .expect(400);
+
+      expect(incorrectValue.message).toBe('Invalid body');
+
+      const {
+        body: { extraKey = error },
+      } = await request(app)
+        .patch('/api/reviews/3')
+        .send({ inc_votes: 1, surplus_key: 'this is an extra key' })
+        .expect(400);
+
+      expect(extraKey.message).toBe('Invalid body');
     });
   });
 });

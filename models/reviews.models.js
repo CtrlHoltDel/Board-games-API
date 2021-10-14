@@ -1,7 +1,7 @@
 const { fetchSingleData, fetchCount, updateVote } = require('../utils/utils');
-const { checkId } = require('../utils/validation');
+const { checkId, validateBody } = require('../utils/validation');
 
-exports.fetchReviews = async (reviewId) => {
+exports.fetchReview = async (reviewId) => {
   await checkId(reviewId);
 
   const review = await fetchSingleData('reviews', 'review_id', reviewId);
@@ -26,7 +26,14 @@ exports.fetchReviews = async (reviewId) => {
 };
 
 exports.amendReviewVote = async (votes, review_id) => {
-  const review = await updateVote(votes, review_id);
+  await checkId(review_id);
+  await validateBody(votes, ['inc_votes', 'number']);
 
-  return review;
+  const { inc_votes } = votes;
+
+  const review = await updateVote(inc_votes, review_id);
+
+  return review
+    ? review
+    : Promise.reject({ status: 404, message: 'Non-existent review' });
 };

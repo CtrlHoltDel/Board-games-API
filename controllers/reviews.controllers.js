@@ -1,21 +1,17 @@
-const { fetchReviews, amendReviewVote } = require('../models/reviews.models');
+const { fetchReview, amendReviewVote } = require('../models/reviews.models');
 
-exports.getReviews = async ({ params: { review_id } }, res, next) => {
+exports.getReview = async ({ params: { review_id } }, res, next) => {
   try {
-    const review = await fetchReviews(review_id);
+    const review = await fetchReview(review_id);
     res.status(200).send({ review });
   } catch (err) {
     next(err);
   }
 };
 
-exports.patchReview = async (
-  { body: { inc_votes }, params: { review_id } },
-  res,
-  next
-) => {
+exports.patchReview = async ({ body, params: { review_id } }, res, next) => {
   try {
-    const review = await amendReviewVote(inc_votes, review_id);
+    const review = await amendReviewVote(body, review_id);
     res.status(200).send({ review });
   } catch (err) {
     next(err);
