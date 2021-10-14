@@ -1,6 +1,6 @@
-const { fetchAllData } = require('../utils/utils');
+const { pullAllData } = require('../utils/utils');
 
 exports.fetchCategories = async () => {
-  const result = await fetchAllData('categories');
+  const result = await pullAllData('categories');
   return result;
 };

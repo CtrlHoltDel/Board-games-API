@@ -10,7 +10,7 @@ exports.customError = (error, req, res, next) => {
   }
 };
 
-exports.serverError = (err, req, res) => {
+exports.serverError = (err, req, res, next) => {
   console.log(err, '<< Uncaught error');
   res.status(500);
 };
