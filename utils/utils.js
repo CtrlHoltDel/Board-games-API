@@ -72,3 +72,23 @@ exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
 
   return rows;
 };
+
+//Add item
+exports.addItem = async (table, values, input) => {
+  const queryBody = format(
+    `
+    INSERT INTO %I
+    (%I)
+    VALUES
+    (%L)
+    RETURNING *;
+    `,
+    table,
+    values,
+    input
+  );
+
+  const { rows } = await db.query(queryBody);
+
+  return rows[0];
+};

@@ -256,11 +256,105 @@ describe('/api/reviews/:review_id', () => {
 });
 
 describe('/api/reviews/:review_id/comments', () => {
-  it('200: Returns an array of comments for a specific review', async () => {
-    const { body } = await request(app)
-      .get('/api/reviews/2/comments')
-      .expect(200);
+  describe('GET', () => {
+    it('200: Returns an array of comments for a specific review', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/2/comments')
+        .expect(200);
 
-    expect(body.comments).toHaveLength(3);
+      expect(body.comments).toHaveLength(3);
+    });
+    it('200: Returns an empty array if passed an id that exists but is related to no comments', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/4/comments')
+        .expect(200);
+
+      expect(body.comments).toHaveLength(0);
+    });
+    it('400: Returns an error when passed a non-integer review_id', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/not_an_integer/comments')
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+    it('404: Returns an error if passed the id of a non-existent review', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/12747/comments')
+        .expect(404);
+
+      expect(body.error.message).toBe('Non existent review');
+    });
+  });
+  describe.only('POST', () => {
+    it('201: Adds a review to the database when passed a valid ID', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews/4/comments')
+        .send({
+          username: 'philippaclaire9',
+          body: 'This seems to be the first review for this!',
+        })
+        .expect(201);
+
+      console.log(body);
+      expect(body.comment).toEqual({
+        comment_id: 7,
+        author: 'philippaclaire9',
+        review_id: 4,
+        votes: 0,
+        created_at: expect.any(String),
+        body: 'This seems to be the first review for this!',
+      });
+    });
+    it('201: Adds review and ignores surplus properties', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews/4/comments')
+        .send({
+          username: 'philippaclaire9',
+          extra_key: 'I should just be ignored',
+          body: 'This seems to be the second review for this!',
+          another: 'This should also be ignored',
+        })
+        .expect(201);
+
+      expect(body.comment).toEqual({
+        comment_id: 7,
+        author: 'philippaclaire9',
+        review_id: 4,
+        votes: 0,
+        created_at: expect.any(String),
+        body: 'This seems to be the second review for this!',
+      });
+    });
+    it('400: Returns an error when passed a non-integer review_id', async () => {
+      await request(app)
+        .post('/api/reviews/not_an_integer/comments')
+        .send({
+          username: 'philippaclaire9',
+          body: 'This seems to be the first review for this!',
+        })
+        .expect(400);
+    });
+    it('404: Returns an error if passed the id of a non-existent review', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews/12747/comments')
+        .send({
+          username: 'philippaclaire9',
+          body: "Now there's a ton of reviews!",
+        })
+        .expect(404);
+
+      expect(body.error.message).toBe('Non existent review');
+    });
+    it('400: Returns a 404 if the body is missing a property', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews/3/comments')
+        .send({
+          username: 'philippaclaire9',
+        })
+        .expect(400);
+
+      expect(body.error.message).toBe('Invalid body');
+    });
   });
 });

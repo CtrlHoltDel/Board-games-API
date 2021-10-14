@@ -1,5 +1,4 @@
 const {
-  pullSingleData,
   pullCount,
   updateVote,
   pullReviews,
@@ -14,8 +13,6 @@ const {
 
 exports.fetchReview = async (reviewId) => {
   await checkId(reviewId);
-
-  // const review = await pullSingleData('reviews', 'review_id', reviewId);
 
   const review = await pullList('reviews', 'review_id', reviewId);
 
@@ -88,6 +85,13 @@ exports.amendReviewVote = async (votes, review_id) => {
 };
 
 exports.fetchReviewComments = async (reviewId) => {
+  await checkId(reviewId);
+  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
+
+  if (!reviewCheck[0]) {
+    return Promise.reject({ status: 404, message: 'Non existent review' });
+  }
+
   const comments = await pullList('comments', 'review_id', reviewId);
 
   return comments;

@@ -38,7 +38,7 @@ exports.createTables = async () => {
     review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE,
     votes INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW(),
-    body VARCHAR(1000)
+    body VARCHAR(1000) NOT NULL
   );`;
 
   const reviewLikes = `CREATE TABLE review_likes (
