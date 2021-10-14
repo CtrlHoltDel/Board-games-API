@@ -254,3 +254,13 @@ describe('/api/reviews/:review_id', () => {
     });
   });
 });
+
+describe('/api/reviews/:review_id/comments', () => {
+  it('200: Returns an array of comments for a specific review', async () => {
+    const { body } = await request(app)
+      .get('/api/reviews/2/comments')
+      .expect(200);
+
+    expect(body.comments).toHaveLength(3);
+  });
+});

@@ -1,12 +1,6 @@
 const format = require('pg-format');
 const db = require('../db/connection');
 
-exports.pullSingleData = async (table, column, criteria) => {
-  const queryString = format(`SELECT * FROM %I WHERE %I = $1;`, table, column);
-  const { rows } = await db.query(queryString, [criteria]);
-  return rows[0];
-};
-
 exports.pullCount = async (select, table, column, criteria) => {
   const queryString = format(
     `SELECT COUNT(%L) :: INT FROM %I WHERE %I = $1;`,
@@ -58,6 +52,23 @@ exports.pullReviews = async (
   }
 
   const { rows } = await db.query(updatedQueryBody, values);
+
+  return rows;
+};
+
+exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
+  const queryBody = format(
+    `
+    SELECT * FROM %I 
+    WHERE %I = %L
+    LIMIT $1 OFFSET $2
+    `,
+    table,
+    column,
+    criteria
+  );
+
+  const { rows } = await db.query(queryBody, [limit, p]);
 
   return rows;
 };

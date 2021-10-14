@@ -1,9 +1,9 @@
-const { query } = require('express');
 const {
   pullSingleData,
   pullCount,
   updateVote,
   pullReviews,
+  pullList,
 } = require('../utils/utils');
 const {
   checkId,
@@ -15,7 +15,9 @@ const {
 exports.fetchReview = async (reviewId) => {
   await checkId(reviewId);
 
-  const review = await pullSingleData('reviews', 'review_id', reviewId);
+  // const review = await pullSingleData('reviews', 'review_id', reviewId);
+
+  const review = await pullList('reviews', 'review_id', reviewId);
 
   const comment_count = await pullCount(
     'comment_id',
@@ -31,8 +33,8 @@ exports.fetchReview = async (reviewId) => {
     reviewId
   );
 
-  return review
-    ? { ...review, comment_count, likes }
+  return review[0]
+    ? { ...review[0], comment_count, likes }
     : Promise.reject({ status: 404, message: 'Non-existent review' });
 };
 
@@ -67,7 +69,6 @@ exports.fetchReviews = async (queries) => {
     ORDER BY %I %s
     LIMIT $1 OFFSET $2`;
 
-  console.log(queryBody);
   const reviews = await pullReviews(queryBody, { ...queries });
 
   return reviews;
@@ -84,4 +85,10 @@ exports.amendReviewVote = async (votes, review_id) => {
   return review
     ? review
     : Promise.reject({ status: 404, message: 'Non-existent review' });
+};
+
+exports.fetchReviewComments = async (reviewId) => {
+  const comments = await pullList('comments', 'review_id', reviewId);
+
+  return comments;
 };

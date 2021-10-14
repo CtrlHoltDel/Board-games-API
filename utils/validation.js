@@ -1,12 +1,8 @@
-const { sort } = require('../db/data/test-data/categories');
-
 exports.checkId = (id) => {
   if (!Number(id)) {
     return Promise.reject({ status: 400, message: 'Bad request' });
   }
 };
-
-exports.checkDb = () => {};
 
 exports.validateBody = (queries, ...validKeys) => {
   const rejectObject = { status: 400, message: 'Invalid body' };
@@ -24,7 +20,18 @@ exports.validateBody = (queries, ...validKeys) => {
   }
 };
 
-exports.validateQueryValues = ({
+exports.validatePagination = (limit, p) => {
+  if (
+    !Number(limit) ||
+    (!Number(p) && Number(p) !== 0) ||
+    limit % 1 !== 0 ||
+    p % 1 !== 0
+  ) {
+    return Promise.reject({ status: 400, message: 'Invalid query' });
+  }
+};
+
+exports.validateQueryValues = async ({
   sort_by = 'votes',
   order = 'desc',
   limit = 10,
@@ -33,14 +40,9 @@ exports.validateQueryValues = ({
   const validColumns = ['votes', 'category', 'comment_count', 'created_at'];
   const validOrder = ['asc', 'ASC', 'desc', 'DESC'];
 
-  if (
-    !validColumns.includes(sort_by) ||
-    !validOrder.includes(order) ||
-    !Number(limit) ||
-    (!Number(p) && Number(p) !== 0) ||
-    limit % 1 !== 0 ||
-    p % 1 !== 0
-  ) {
+  await this.validatePagination(limit, p);
+
+  if (!validColumns.includes(sort_by) || !validOrder.includes(order)) {
     return Promise.reject({ status: 400, message: 'Invalid query' });
   }
 };
