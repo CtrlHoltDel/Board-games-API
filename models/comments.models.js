@@ -3,6 +3,7 @@ const {
   pullList,
   deleteFromDb,
   updateVote,
+  updateBody,
 } = require('../utils/utils');
 const { checkId, validateBody } = require('../utils/validation');
 
@@ -43,7 +44,7 @@ exports.removeComment = async (commentId) => {
   await deleteFromDb('comments', 'comment_id', commentId);
 };
 
-exports.amendComment = async (commentId, queries) => {
+exports.amendCommentVote = async (commentId, queries) => {
   await checkId(commentId);
   await validateBody(queries, ['inc_votes', 'number']);
 
@@ -60,4 +61,25 @@ exports.amendComment = async (commentId, queries) => {
     return Promise.reject({ status: 404, message: 'Non-existent comment' });
 
   return comment;
+};
+
+exports.amendCommentBody = async (commentId, queries) => {
+  await checkId(commentId);
+  await validateBody(queries, ['body', 'string']);
+
+  const commentTest = await pullList('comments', 'comment_id', commentId);
+  if (!commentTest[0])
+    return Promise.reject({ status: 404, message: 'Non-existent comment' });
+
+  const { body } = queries;
+
+  const comment = await updateBody(
+    'comments',
+    'body',
+    body,
+    'comment_id',
+    commentId
+  );
+
+  return comment[0];
 };

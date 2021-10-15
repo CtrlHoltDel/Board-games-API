@@ -3,8 +3,8 @@ const db = require('../db/connection');
 const {
   pullCount,
   updateVote,
-  pullReviews,
   pullList,
+  updateBody,
 } = require('../utils/utils');
 const {
   checkId,
@@ -113,4 +113,27 @@ exports.fetchReviewComments = async (reviewId) => {
   const comments = await pullList('comments', 'review_id', reviewId);
 
   return comments;
+};
+
+exports.amendReviewBody = async (input, reviewId) => {
+  await checkId(reviewId);
+  await validateBody(input, ['body', 'string']);
+
+  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
+
+  if (!reviewCheck[0]) {
+    return Promise.reject({ status: 404, message: 'Non-existent review' });
+  }
+
+  const { body } = input;
+
+  const review = await updateBody(
+    'reviews',
+    'review_body',
+    body,
+    'review_id',
+    reviewId
+  );
+
+  return review[0];
 };

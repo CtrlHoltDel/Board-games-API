@@ -19,19 +19,6 @@ exports.pullAllData = async (table) => {
   return rows;
 };
 
-exports.updateVote = async (table, amount, column, id) => {
-  const queryBody = format(
-    `UPDATE %I SET votes = votes + %s WHERE %I = $1 RETURNING *;`,
-    table,
-    amount,
-    column
-  );
-
-  const { rows } = await db.query(queryBody, [id]);
-
-  return rows[0];
-};
-
 exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
   const queryBody = format(
     `
@@ -66,6 +53,32 @@ exports.insertItem = async (table, values, input) => {
   const { rows } = await db.query(queryBody);
 
   return rows[0];
+};
+
+exports.updateVote = async (table, amount, column, id) => {
+  const queryBody = format(
+    `UPDATE %I SET votes = votes + %s WHERE %I = $1 RETURNING *;`,
+    table,
+    amount,
+    column
+  );
+
+  const { rows } = await db.query(queryBody, [id]);
+
+  return rows[0];
+};
+
+exports.updateBody = async (table, cell, body, column, criteria) => {
+  const queryBody = format(
+    `UPDATE %I SET %I = %L WHERE %I = $1 RETURNING *;`,
+    table,
+    cell,
+    body,
+    column
+  );
+
+  const { rows } = await db.query(queryBody, [criteria]);
+  return rows;
 };
 
 exports.deleteFromDb = async (table, column, id) => {

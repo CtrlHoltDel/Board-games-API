@@ -4,6 +4,7 @@ const request = require('supertest');
 
 const testData = require('../db/data/test-data/index.js');
 const seed = require('../db/seeds/seed.js');
+const e = require('express');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -257,6 +258,56 @@ describe('/api/reviews/:review_id', () => {
   });
 });
 
+describe('/api/reviews/:review_id/edit', () => {
+  describe('PATCH', () => {
+    it('200: Edits a review based upon ID, returns that review ', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/2/edit')
+        .send({ body: 'This review has been updated' })
+        .expect(200);
+
+      expect(body.review.review_body).toEqual('This review has been updated');
+    });
+    it("400: Responds with an error if passed an ID that isn't an integer", async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/not_an_integer/edit')
+        .send({ body: 'This review has been updated' })
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+    it('400: Responds with an error if passed an invalid review object', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/3/edit')
+        .send({ 'invalid name': 'This review has been updated' })
+        .expect(400);
+
+      expect(body.error.message).toBe('Invalid body');
+      const invalidValue = await request(app)
+        .patch('/api/reviews/3/edit')
+        .send({ body: 122 })
+        .expect(400);
+
+      expect(invalidValue.body.error.message).toBe('Invalid body');
+
+      const surplusKeys = await request(app)
+        .patch('/api/reviews/3/edit')
+        .send({ extra_key: 'Surplus key', body: 'test' })
+        .expect(400);
+
+      expect(surplusKeys.body.error.message).toBe('Invalid body');
+    });
+    it("404: Responds with an error if passed an id that doesn't relate to a review", async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/23455/edit')
+        .send({ body: 'This review has been updated' })
+        .expect(404);
+
+      expect(body.error.message).toBe('Non-existent review');
+    });
+  });
+});
+
 describe('/api/reviews/:review_id/comments', () => {
   describe('GET', () => {
     it('200: Returns an array of comments for a specific review', async () => {
@@ -438,6 +489,55 @@ describe('/api/comments/:comment_id', () => {
   });
 });
 
+describe('/api/comments/:comment_id/edit', () => {
+  it('200: Edits a comment based upon ID, returns that comment', async () => {
+    const { body } = await request(app)
+      .patch('/api/comments/2/edit')
+      .send({ body: 'This comment has been updated' })
+      .expect(200);
+
+    expect(body.comment.body).toEqual('This comment has been updated');
+  });
+  it("400: Responds with an error if passed an id that isn't an integer", async () => {
+    const { body } = await request(app)
+      .patch('/api/comments/not_an_id/edit')
+      .send({ body: 'This comment has been updated' })
+      .expect(400);
+
+    expect(body.error.message).toBe('Bad request');
+  });
+  it('400: Responds with an error if given an invalid body', async () => {
+    const { body } = await request(app)
+      .patch('/api/comments/3/edit')
+      .send({ invalid_key_name: 'This comment has been updated' })
+      .expect(400);
+
+    expect(body.error.message).toBe('Invalid body');
+
+    const incorrectValue = await request(app)
+      .patch('/api/comments/4/edit')
+      .send({ body: {} })
+      .expect(400);
+
+    expect(incorrectValue.body.error.message).toBe('Invalid body');
+
+    const surplusKeys = await request(app)
+      .patch('/api/comments/3/edit')
+      .send({ body: 'this is allowed', surplus: 'key' })
+      .expect(400);
+
+    expect(surplusKeys.body.error.message).toBe('Invalid body');
+  });
+  it("404: Responds with an error if passed a comment id that doesn't relate to a comment", async () => {
+    const { body } = await request(app)
+      .patch('/api/comments/1232342/edit')
+      .send({ body: 'This commend has been updated' })
+      .expect(404);
+
+    expect(body.error.message).toBe('Non-existent comment');
+  });
+});
+
 describe('/api/users', () => {
   describe('GET', () => {
     it('200: Returns an array with a full list of users', async () => {
@@ -547,4 +647,14 @@ describe('/api/users/:username', () => {
       expect(body.error.message).toBe('Non-existent user');
     });
   });
+});
+
+describe('/api/users/:username/likes', () => {
+  describe('GET', () => {
+    it('200: Returns a list of all the reviews that have been liked by the specified user', async () => {});
+  });
+
+  // SELECT title, owner, review_body, review_img_url, votes, category, owner, created_at FROM review_likes
+  // JOIN reviews ON review_likes.review_id = reviews.review_id
+  // WHERE username = 'bainesface'
 });
