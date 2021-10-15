@@ -71,13 +71,13 @@ exports.fetchReviews = async (queries) => {
   return reviews;
 };
 
-exports.amendReviewVote = async (votes, review_id) => {
-  await checkId(review_id);
+exports.amendReviewVote = async (votes, reviewId) => {
+  await checkId(reviewId);
   await validateBody(votes, ['inc_votes', 'number']);
 
   const { inc_votes } = votes;
 
-  const review = await updateVote(inc_votes, review_id);
+  const review = await updateVote('reviews', inc_votes, 'review_id', reviewId);
 
   return review
     ? review

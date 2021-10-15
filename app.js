@@ -5,6 +5,7 @@ const {
   invalidEndpoint,
   customError,
   serverError,
+  psqlError,
 } = require('./errors/errors');
 
 const app = express();
@@ -16,6 +17,7 @@ app.use('/api', apiRouter);
 app.all('/*', invalidEndpoint);
 
 app.use(customError);
+app.use(psqlError);
 app.use(serverError);
 
 module.exports = app;

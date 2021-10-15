@@ -22,7 +22,7 @@ exports.fillTables = async ({
     insertData('categories', ['slug', 'description'], categoryData)
   );
   await db.query(
-    insertData('users', ['username', 'name', 'avatar_url'], userData)
+    insertData('users', ['username', 'name', 'avatar_url', 'email'], userData)
   );
   await db.query(
     insertData(

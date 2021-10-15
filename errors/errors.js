@@ -10,6 +10,25 @@ exports.customError = (error, req, res, next) => {
   }
 };
 
+exports.psqlError = (err, req, res, next) => {
+  if ((err.code = '23505')) {
+    if (/username/g.test(err.detail)) {
+      res.status(400).send({
+        status: 400,
+        message: 'Username already exists',
+      });
+    }
+    if (/email/g.test(err.detail)) {
+      res.status(400).send({
+        status: 400,
+        message: 'Email already exists',
+      });
+    }
+  } else {
+    next(err);
+  }
+};
+
 exports.serverError = (err, req, res, next) => {
   console.log(err, '<< Uncaught error');
   res.status(500);

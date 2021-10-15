@@ -19,10 +19,12 @@ exports.pullAllData = async (table) => {
   return rows;
 };
 
-exports.updateVote = async (amount, id) => {
+exports.updateVote = async (table, amount, column, id) => {
   const queryBody = format(
-    `UPDATE reviews SET votes = votes + %s WHERE review_id = $1 RETURNING *;`,
-    amount
+    `UPDATE %I SET votes = votes + %s WHERE %I = $1 RETURNING *;`,
+    table,
+    amount,
+    column
   );
 
   const { rows } = await db.query(queryBody, [id]);
@@ -73,7 +75,7 @@ exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
   return rows;
 };
 
-exports.addItem = async (table, values, input) => {
+exports.insertItem = async (table, values, input) => {
   const queryBody = format(
     `
     INSERT INTO %I

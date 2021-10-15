@@ -17,7 +17,8 @@ exports.createTables = async () => {
   const users = `CREATE TABLE users (
     username VARCHAR PRIMARY KEY,
     avatar_url VARCHAR(255),
-    name VARCHAR
+    name VARCHAR,
+    email VARCHAR(50) UNIQUE
   );`;
 
   const reviews = `CREATE TABLE reviews (

@@ -126,11 +126,13 @@ describe('/api/reviews', () => {
       expect(body.reviews[0].review_id).toBe(9);
     });
     it('400: Returns an error for invalid sort_by query', async () => {
-      const { body } = await request(app)
+      const {
+        body: { error },
+      } = await request(app)
         .get('/api/reviews?sort_by=invalid_sort_by')
         .expect(400);
 
-      expect(body.error.message).toBe('Invalid query');
+      expect(error.message).toBe('Invalid query');
     });
     it('400: Returns an error for invalid order query value', async () => {
       const { body } = await request(app)
@@ -163,7 +165,7 @@ describe('/api/reviews', () => {
 
 describe('/api/reviews/:review_id', () => {
   describe('GET', () => {
-    it('200: Responds with a object containing the single review including comment count and likes.', async () => {
+    it('200: Responds with a single review including comment count and likes keys.', async () => {
       const { body } = await request(app).get('/api/reviews/1').expect(200);
       expect(body.review).toMatchObject({
         review_id: expect.any(Number),
@@ -186,7 +188,7 @@ describe('/api/reviews/:review_id', () => {
 
       expect(body.error.message).toBe('Bad request');
     });
-    it("404: Responds with an error if passed the ID that doesn't relate toa  review", async () => {
+    it("404: Responds with an error if passed the ID that doesn't relate to a review", async () => {
       const { body } = await request(app).get('/api/reviews/23983').expect(404);
 
       expect(body.error.message).toBe('Non-existent review');
@@ -287,7 +289,7 @@ describe('/api/reviews/:review_id/comments', () => {
     });
   });
   describe('POST', () => {
-    it('201: Adds a review to the database when passed a valid ID', async () => {
+    it('201: Adds a comment to the database when passed a valid ID', async () => {
       const { body } = await request(app)
         .post('/api/reviews/4/comments')
         .send({
@@ -305,13 +307,13 @@ describe('/api/reviews/:review_id/comments', () => {
         body: 'This seems to be the first review for this!',
       });
     });
-    it('201: Adds review and ignores surplus properties', async () => {
+    it('201: Adds comment and ignores surplus properties', async () => {
       const { body } = await request(app)
         .post('/api/reviews/4/comments')
         .send({
           username: 'philippaclaire9',
           extra_key: 'I should just be ignored',
-          body: 'This seems to be the second review for this!',
+          body: 'This seems to be the second comment for this!',
           another: 'This should also be ignored',
         })
         .expect(201);
@@ -322,7 +324,7 @@ describe('/api/reviews/:review_id/comments', () => {
         review_id: 4,
         votes: 0,
         created_at: expect.any(String),
-        body: 'This seems to be the second review for this!',
+        body: 'This seems to be the second comment for this!',
       });
     });
     it('400: Returns an error when passed a non-integer review_id', async () => {
@@ -381,14 +383,168 @@ describe('/api/comments/:comment_id', () => {
       expect(body.error.message).toBe('Non-existent comment');
     });
   });
+  describe('PATCH', () => {
+    it('200: Updates and responds with the updated comment object', async () => {
+      const { body } = await request(app)
+        .patch('/api/comments/3')
+        .send({ inc_votes: 1 })
+        .expect(200);
+
+      expect(body.comment.votes).toBe(11);
+    });
+    it("400: Responds with an error if passed an id that isn't an integer", async () => {
+      const { body } = await request(app)
+        .patch('/api/comments/not_an_id')
+        .send({ inc_votes: 1 })
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+    it('400: Responds with an error if passed an invalid body', async () => {
+      const {
+        body: { error },
+      } = await request(app)
+        .patch('/api/comments/3')
+        .send({ incorrect_body: 1 })
+        .expect(400);
+      expect(error.message).toBe('Invalid body');
+
+      const {
+        body: { invalidType = error },
+      } = await request(app)
+        .patch('/api/comments/3')
+        .send({ inc_votes: 'not an integer' })
+        .expect(400);
+
+      expect(invalidType.message).toBe('Invalid body');
+
+      const {
+        body: { surplusKey = error },
+      } = await request(app)
+        .patch('/api/comments/3')
+        .send({ first_extra_key: '', inc_votes: 2, another_extra_key: '' })
+        .expect(400);
+
+      expect(surplusKey.message).toBe('Invalid body');
+    });
+    it("404: Responds with an error if passed an id that doesn't relate to a comment", async () => {
+      const { body } = await request(app)
+        .patch('/api/comments/2034847')
+        .send({ inc_votes: 1 })
+        .expect(404);
+
+      expect(body.error.message).toBe('Non-existent comment');
+    });
+  });
 });
 
 describe('/api/users', () => {
   describe('GET', () => {
     it('200: Returns an array with a full list of users', async () => {
       const { body } = await request(app).get('/api/users').expect(200);
-
       expect(body.users).toHaveLength(4);
+    });
+  });
+  describe('POST', () => {
+    it('200: Adds a user to the database, returns the newly created user', async () => {
+      const { body } = await request(app)
+        .post('/api/users')
+        .send({
+          username: 'test_user',
+          avatar_url: 'http://image.com/image',
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+        })
+        .expect(201);
+
+      expect(body.user).toEqual({
+        username: 'test_user',
+        avatar_url: 'http://image.com/image',
+        name: 'test_name',
+        email: 'new_email@gmail.com',
+      });
+    });
+    it('400: Returns an error if the body is incorrect', async () => {
+      const { body } = await request(app)
+        .post('/api/users')
+        .send({
+          incorrect_body: 'test_user',
+          avatar_url: 'http://image.com/image',
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+        })
+        .expect(400);
+      expect(body.error.message).toBe('Invalid body');
+
+      const invalidType = await request(app)
+        .post('/api/users')
+        .send({
+          username: 'test_user',
+          avatar_url: 12,
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+        })
+        .expect(400);
+
+      expect(invalidType.body.error.message).toBe('Invalid body');
+
+      const surplusKeys = await request(app)
+        .post('/api/users')
+        .send({
+          username: 'test_user',
+          avatar_url: 'http://google.com/image',
+          extra_key: 'An extra key',
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+        })
+        .expect(400);
+
+      expect(surplusKeys.body.error.message).toBe('Invalid body');
+    });
+    it('400: Returns an error if the username or email already exists', async () => {
+      const { body } = await request(app)
+        .post('/api/users')
+        .send({
+          username: 'mallionaire',
+          avatar_url: 'http://image.com/image',
+          email: 'new_email@gmail.com',
+          name: 'test_name',
+        })
+        .expect(400);
+
+      expect(body.message).toBe('Username already exists');
+
+      const result = await request(app).post('/api/users').send({
+        username: 'new_user',
+        avatar_url: 'http://image.com/image',
+        email: '7not.foun@codb.site',
+        name: 'test_name',
+      });
+
+      expect(result.body.message).toBe('Email already exists');
+    });
+  });
+});
+
+describe('/api/users/:username', () => {
+  describe('GET', () => {
+    it('200: Responds with a single user object', async () => {
+      const { body } = await request(app)
+        .get('/api/users/mallionaire')
+        .expect(200);
+      expect(body.user).toEqual({
+        username: 'mallionaire',
+        avatar_url:
+          'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg',
+        name: 'haz',
+        email: '7not.foun@codb.site',
+      });
+    });
+    it("404: Responds with an error if username doesn't relate to a user", async () => {
+      const { body } = await request(app)
+        .get('/api/users/not_a_user')
+        .expect(404);
+      expect(body.error.message).toBe('Non-existent user');
     });
   });
 });

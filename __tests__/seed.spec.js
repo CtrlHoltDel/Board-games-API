@@ -114,6 +114,7 @@ describe('Seed tests', () => {
           avatar_url:
             'https://avatars2.githubusercontent.com/u/24394918?s=400&v=4',
           username: 'bainesface',
+          email: 'testemail@gmail.com',
         },
       ];
       const expectedResult = [
@@ -121,6 +122,7 @@ describe('Seed tests', () => {
           'bainesface',
           'sarah',
           'https://avatars2.githubusercontent.com/u/24394918?s=400&v=4',
+          'testemail@gmail.com',
         ],
       ];
       expect(pgFormatFriendly(testData, 'users')).toEqual(expectedResult);

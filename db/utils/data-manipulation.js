@@ -36,8 +36,8 @@ exports.pgFormatFriendly = (objects, type) => {
     });
   } else if (type === 'users') {
     objects.forEach((object) => {
-      const { username, name, avatar_url } = object;
-      returnArray.push([username, name, avatar_url]);
+      const { username, name, avatar_url, email } = object;
+      returnArray.push([username, name, avatar_url, email]);
     });
   } else if (type === 'review_likes') {
     objects.forEach((object) => {

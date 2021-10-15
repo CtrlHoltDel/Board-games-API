@@ -1,4 +1,9 @@
-const { addItem, pullList, deleteFromDb } = require('../utils/utils');
+const {
+  insertItem,
+  pullList,
+  deleteFromDb,
+  updateVote,
+} = require('../utils/utils');
 const { checkId, validateBody } = require('../utils/validation');
 
 exports.insertComment = async (reviewId, input) => {
@@ -17,7 +22,7 @@ exports.insertComment = async (reviewId, input) => {
     return Promise.reject({ status: 404, message: 'Non existent review' });
   }
 
-  const comment = await addItem(
+  const comment = await insertItem(
     'comments',
     ['author', 'body', 'review_id'],
     [username, body, reviewId]
@@ -36,4 +41,23 @@ exports.removeComment = async (commentId) => {
   }
 
   await deleteFromDb('comments', 'comment_id', commentId);
+};
+
+exports.amendComment = async (commentId, queries) => {
+  await checkId(commentId);
+  await validateBody(queries, ['inc_votes', 'number']);
+
+  const { inc_votes } = queries;
+
+  const comment = await updateVote(
+    'comments',
+    inc_votes,
+    'comment_id',
+    commentId
+  );
+
+  if (!comment)
+    return Promise.reject({ status: 404, message: 'Non-existent comment' });
+
+  return comment;
 };
