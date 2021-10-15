@@ -651,7 +651,7 @@ describe('/api/users/:username', () => {
 
 describe('/api/users/:username/likes', () => {
   describe('GET', () => {
-    it('200: Returns a list of all the reviews that have been liked by the specified user', async () => {});
+    it('200: Returns a list of all the reviews that have been liked by the specified user with title, owner, review_body, review_img_url, votes, category, owner created_at and liked at keys', async () => {});
   });
 
   // SELECT title, owner, review_body, review_img_url, votes, category, owner, created_at FROM review_likes

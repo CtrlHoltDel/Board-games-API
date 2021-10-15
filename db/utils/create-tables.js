@@ -16,7 +16,7 @@ exports.createTables = async () => {
 
   const users = `CREATE TABLE users (
     username VARCHAR PRIMARY KEY,
-    avatar_url VARCHAR(255),
+    avatar_url VARCHAR(255) DEFAULT 'https://i.imgur.com/5jd7Q7T.png',
     name VARCHAR,
     email VARCHAR(50) UNIQUE
   );`;
@@ -37,15 +37,16 @@ exports.createTables = async () => {
     comment_id SERIAL PRIMARY KEY,
     author VARCHAR REFERENCES users(username) ON DELETE CASCADE,
     review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE,
-    votes INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW(),
+    votes INT DEFAULT 0 ,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     body VARCHAR(1000) NOT NULL
   );`;
 
   const reviewLikes = `CREATE TABLE review_likes (
     rl_p_key SERIAL PRIMARY KEY,
-    username VARCHAR REFERENCES users(username) ON DELETE CASCADE,
-    review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE
+    username VARCHAR REFERENCES users(username) ON DELETE CASCADE NOT NULL,
+    review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE NOT NULL,
+    liked_at TIMESTAMP DEFAULT NOW() NOT NULL
   );
   
   ALTER TABLE review_likes

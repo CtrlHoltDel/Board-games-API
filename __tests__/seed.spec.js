@@ -132,15 +132,17 @@ describe('Seed tests', () => {
         {
           username: 'test_user_1',
           review_id: 3,
+          liked_at: new Date(1610964101251),
         },
         {
           review_id: 1,
           username: 'test_user_2',
+          liked_at: new Date(1610964101251),
         },
       ];
       const expectedResult = [
-        ['test_user_1', 3],
-        ['test_user_2', 1],
+        ['test_user_1', 3, new Date(1610964101251)],
+        ['test_user_2', 1, new Date(1610964101251)],
       ];
       expect(pgFormatFriendly(testData, 'review_likes')).toEqual(
         expectedResult

@@ -1,4 +1,9 @@
-const { fetchUsers, fetchUser, addUser } = require('../models/users.models');
+const {
+  fetchUsers,
+  fetchUser,
+  addUser,
+  fetchUserLIkes,
+} = require('../models/users.models');
 
 exports.getUsers = async (req, res, next) => {
   try {
@@ -24,6 +29,15 @@ exports.postUser = async (req, res, next) => {
   try {
     const user = await addUser(body);
     res.status(201).send({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserLikes = async (req, res, next) => {
+  const { username } = req.params;
+  try {
+    const reviews = await fetchUserLIkes(username);
   } catch (err) {
     next(err);
   }

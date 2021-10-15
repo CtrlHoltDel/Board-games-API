@@ -35,3 +35,7 @@ exports.addUser = async (queries) => {
 
   return user;
 };
+
+exports.fetchUserLIkes = async (username) => {
+  console.log(username);
+};

@@ -41,8 +41,8 @@ exports.pgFormatFriendly = (objects, type) => {
     });
   } else if (type === 'review_likes') {
     objects.forEach((object) => {
-      const { username, review_id } = object;
-      returnArray.push([username, review_id]);
+      const { username, review_id, liked_at } = object;
+      returnArray.push([username, review_id, liked_at]);
     });
   }
 
