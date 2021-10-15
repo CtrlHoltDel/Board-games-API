@@ -1,4 +1,4 @@
-const { addItem, pullList } = require('../utils/utils');
+const { addItem, pullList, deleteFromDb } = require('../utils/utils');
 const { checkId, validateBody } = require('../utils/validation');
 
 exports.insertComment = async (reviewId, input) => {
@@ -24,4 +24,16 @@ exports.insertComment = async (reviewId, input) => {
   );
 
   return comment;
+};
+
+exports.removeComment = async (commentId) => {
+  await checkId(commentId);
+
+  const comment = await pullList('comments', 'comment_id', commentId);
+
+  if (!comment[0]) {
+    return Promise.reject({ status: 404, message: 'Non-existent comment' });
+  }
+
+  await deleteFromDb('comments', 'comment_id', commentId);
 };

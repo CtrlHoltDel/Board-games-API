@@ -286,7 +286,7 @@ describe('/api/reviews/:review_id/comments', () => {
       expect(body.error.message).toBe('Non existent review');
     });
   });
-  describe.only('POST', () => {
+  describe('POST', () => {
     it('201: Adds a review to the database when passed a valid ID', async () => {
       const { body } = await request(app)
         .post('/api/reviews/4/comments')
@@ -296,7 +296,6 @@ describe('/api/reviews/:review_id/comments', () => {
         })
         .expect(201);
 
-      console.log(body);
       expect(body.comment).toEqual({
         comment_id: 7,
         author: 'philippaclaire9',
@@ -355,6 +354,41 @@ describe('/api/reviews/:review_id/comments', () => {
         .expect(400);
 
       expect(body.error.message).toBe('Invalid body');
+    });
+  });
+});
+
+describe('/api/comments/:comment_id', () => {
+  describe('DEL', () => {
+    it('204: Deletes a comment from the database', async () => {
+      await request(app).del('/api/comments/3').expect(204);
+      const { rows } = await db.query(
+        'SELECT * FROM comments WHERE comment_id = 3'
+      );
+      expect(rows).toHaveLength(0);
+    });
+    it('400: Returns an error if passed an invalid ID', async () => {
+      const { body } = await request(app)
+        .del('/api/comments/not_an_integer')
+        .expect(400);
+      expect(body.error.message).toBe('Bad request');
+    });
+    it("404: Returns an error if passed an id that doesn't relate to a comment", async () => {
+      const { body } = await request(app)
+        .del('/api/comments/294747')
+        .expect(404);
+
+      expect(body.error.message).toBe('Non-existent comment');
+    });
+  });
+});
+
+describe('/api/users', () => {
+  describe('GET', () => {
+    it('200: Returns an array with a full list of users', async () => {
+      const { body } = await request(app).get('/api/users').expect(200);
+
+      expect(body.users).toHaveLength(4);
     });
   });
 });

@@ -2,30 +2,30 @@ const format = require('pg-format');
 const db = require('../db/connection');
 
 exports.pullCount = async (select, table, column, criteria) => {
-  const queryString = format(
+  const queryBody = format(
     `SELECT COUNT(%L) :: INT FROM %I WHERE %I = $1;`,
     select,
     table,
     column
   );
 
-  const { rows } = await db.query(queryString, [criteria]);
+  const { rows } = await db.query(queryBody, [criteria]);
   return rows[0].count;
 };
 
 exports.pullAllData = async (table) => {
-  const queryString = format(`SELECT * FROM %I`, table);
-  const { rows } = await db.query(queryString);
+  const queryBody = format(`SELECT * FROM %I`, table);
+  const { rows } = await db.query(queryBody);
   return rows;
 };
 
 exports.updateVote = async (amount, id) => {
-  const queryString = format(
+  const queryBody = format(
     `UPDATE reviews SET votes = votes + %s WHERE review_id = $1 RETURNING *;`,
     amount
   );
 
-  const { rows } = await db.query(queryString, [id]);
+  const { rows } = await db.query(queryBody, [id]);
 
   return rows[0];
 };
@@ -73,7 +73,6 @@ exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
   return rows;
 };
 
-//Add item
 exports.addItem = async (table, values, input) => {
   const queryBody = format(
     `
@@ -91,4 +90,10 @@ exports.addItem = async (table, values, input) => {
   const { rows } = await db.query(queryBody);
 
   return rows[0];
+};
+
+exports.deleteFromDb = async (table, column, id) => {
+  const queryBody = format(`DELETE FROM %I WHERE %I = $1`, table, column);
+
+  await db.query(queryBody, [id]);
 };
