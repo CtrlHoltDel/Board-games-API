@@ -32,32 +32,6 @@ exports.updateVote = async (table, amount, column, id) => {
   return rows[0];
 };
 
-exports.pullReviews = async (
-  queryBody,
-  {
-    sort_by = 'created_at',
-    order = 'desc',
-    category,
-    limit = 10,
-    p = 0,
-    search = '%%',
-  }
-) => {
-  const updatedQueryBody = format(queryBody, sort_by, order);
-
-  if (+p) p = limit * (p - 1);
-
-  const values = [limit, p, `%${search}%`];
-
-  if (category) {
-    values.push(category.replace('_', ' '));
-  }
-
-  const { rows } = await db.query(updatedQueryBody, values);
-
-  return rows;
-};
-
 exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
   const queryBody = format(
     `

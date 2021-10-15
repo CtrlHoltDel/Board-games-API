@@ -1,3 +1,5 @@
+const format = require('pg-format');
+const db = require('../db/connection');
 const {
   pullCount,
   updateVote,
@@ -47,7 +49,14 @@ exports.fetchReviews = async (queries) => {
 
   await validateQueryValues(queries);
 
-  const { category } = queries;
+  let {
+    sort_by = 'created_at',
+    order = 'desc',
+    category,
+    limit = 10,
+    p = 0,
+    search = '%%',
+  } = queries;
 
   let AND = '';
 
@@ -66,9 +75,18 @@ exports.fetchReviews = async (queries) => {
     ORDER BY %I %s
     LIMIT $1 OFFSET $2`;
 
-  const reviews = await pullReviews(queryBody, { ...queries });
+  if (+p) p = limit * (p - 1);
 
-  return reviews;
+  let values = [limit, p, `%${search}%`];
+
+  if (category) {
+    values.push(category.replace('_', ' '));
+  }
+
+  const updatedQueryBody = format(queryBody, sort_by, order);
+  const { rows } = await db.query(updatedQueryBody, values);
+
+  return rows;
 };
 
 exports.amendReviewVote = async (votes, reviewId) => {
