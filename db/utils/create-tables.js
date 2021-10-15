@@ -17,7 +17,8 @@ exports.createTables = async () => {
   const users = `CREATE TABLE users (
     username VARCHAR PRIMARY KEY,
     avatar_url VARCHAR(255),
-    name VARCHAR
+    name VARCHAR,
+    email VARCHAR(50) UNIQUE
   );`;
 
   const reviews = `CREATE TABLE reviews (
@@ -38,17 +39,17 @@ exports.createTables = async () => {
     review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE,
     votes INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW(),
-    body VARCHAR(1000)
+    body VARCHAR(1000) NOT NULL
   );`;
 
   const reviewLikes = `CREATE TABLE review_likes (
     rl_p_key SERIAL PRIMARY KEY,
     username VARCHAR REFERENCES users(username) ON DELETE CASCADE,
-    liked_review INT REFERENCES reviews(review_id) ON DELETE CASCADE
+    review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE
   );
   
   ALTER TABLE review_likes
-  ADD CONSTRAINT unique_user_like UNIQUE (username, liked_review)`;
+  ADD CONSTRAINT unique_user_like UNIQUE (username, review_id)`;
 
   const tables = [categories, users, reviews, comments, reviewLikes];
 

@@ -1,202 +1,98 @@
-const { all } = require('../app');
-const db = require('../db/connection');
 const {
-    limitOffset,
-    buildReviewQuery,
-    amountOfReviews,
+  pullCount,
+  updateVote,
+  pullReviews,
+  pullList,
 } = require('../utils/utils');
-const validate = require('../utils/validation');
+const {
+  checkId,
+  validateBody,
+  validateQueryValues,
+  validateQueryFields,
+} = require('../utils/validation');
 
-exports.fetchReviewById = async (id) => {
-    await validate.id(id);
+exports.fetchReview = async (reviewId) => {
+  await checkId(reviewId);
 
-    const query = `
-    SELECT username AS owner, title, reviews.review_id, review_body, designer, review_img_url, category, reviews.created_at, reviews.votes, COUNT(comments.body) AS comment_count FROM users
-    JOIN reviews
-    ON users.username = reviews.owner
-    JOIN comments
-    ON comments.review_id = reviews.review_id
-    WHERE reviews.review_id = $1
-    GROUP BY username, title, reviews.review_id;`;
+  const review = await pullList('reviews', 'review_id', reviewId);
 
-    const result = await db.query(query, [id]);
-    if (!result.rows[0])
-        return Promise.reject({
-            status: 404,
-            error: `No reviews with an id of ${id}`,
-        });
-    return result.rows[0];
+  const comment_count = await pullCount(
+    'comment_id',
+    'comments',
+    'review_id',
+    reviewId
+  );
+
+  const likes = await pullCount(
+    'review_id',
+    'review_likes',
+    'review_id',
+    reviewId
+  );
+
+  return review[0]
+    ? { ...review[0], comment_count, likes }
+    : Promise.reject({ status: 404, message: 'Non-existent review' });
 };
 
-const amendVoteById = async (id, amount) => {
-    const query = `
-    UPDATE reviews
-    SET votes = votes + ${amount}
-    WHERE review_id = $1
-    RETURNING *;
-    `;
+exports.fetchReviews = async (queries) => {
+  await validateQueryFields(queries, [
+    'sort_by',
+    'order',
+    'category',
+    'limit',
+    'p',
+    'search',
+  ]);
 
-    const { rows } = await db.query(query, [id]);
+  await validateQueryValues(queries);
 
-    if (rows.length === 0) {
-        return Promise.reject({
-            status: 404,
-            error: `No reviews with an id of ${id}`,
-        });
-    }
+  const { category } = queries;
 
-    return rows[0];
+  let AND = '';
+
+  if (category) {
+    AND = `AND reviews.category = $4`;
+  }
+
+  const queryBody = `
+    SELECT reviews.review_id, title, review_body, designer, review_img_url, reviews.votes, category, owner, reviews.created_at, COUNT(comment_id) :: INT as comment_count 
+    FROM reviews
+    LEFT OUTER JOIN comments
+    ON reviews.review_id = comments.review_id
+    WHERE title iLIKE $3
+    ${AND}
+    GROUP BY reviews.review_id
+    ORDER BY %I %s
+    LIMIT $1 OFFSET $2`;
+
+  const reviews = await pullReviews(queryBody, { ...queries });
+
+  return reviews;
 };
 
-const amendBodyById = async (id, edit) => {
-    const query = `
-        UPDATE reviews
-        SET review_body = $1
-        WHERE review_id = $2
-        RETURNING *;
-        `;
+exports.amendReviewVote = async (votes, reviewId) => {
+  await checkId(reviewId);
+  await validateBody(votes, ['inc_votes', 'number']);
 
-    const { rows } = await db.query(query, [edit, id]);
+  const { inc_votes } = votes;
 
-    return rows[0];
+  const review = await updateVote('reviews', inc_votes, 'review_id', reviewId);
+
+  return review
+    ? review
+    : Promise.reject({ status: 404, message: 'Non-existent review' });
 };
 
-exports.amendReview = async (id, input) => {
-    await validate.id(id);
-    await validate.bodyPatch(input);
+exports.fetchReviewComments = async (reviewId) => {
+  await checkId(reviewId);
+  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
 
-    if (input.inc_votes !== undefined) {
-        return await amendVoteById(id, input.inc_votes);
-    }
+  if (!reviewCheck[0]) {
+    return Promise.reject({ status: 404, message: 'Non existent review' });
+  }
 
-    if (input.edit !== undefined) {
-        return await amendBodyById(id, input.edit);
-    }
-};
+  const comments = await pullList('comments', 'review_id', reviewId);
 
-exports.fetchAllReviews = async (queries) => {
-    const { limit, p } = queries;
-    const { LIMIT, OFFSET } = limitOffset(limit, p);
-
-    await validate.allReviews(queries);
-
-    const { queryBody, cat } = await buildReviewQuery(queries);
-
-    const reviewCount = await amountOfReviews(cat);
-
-    const queryArray = [LIMIT, OFFSET];
-
-    if (cat) {
-        queryArray.push(cat);
-    }
-
-    const { rows } = await db.query(queryBody, queryArray);
-    if (rows.length === 0) {
-        return Promise.reject({
-            status: 404,
-            error: 'Invalid query',
-        });
-    } else {
-        return { reviews: rows, count: reviewCount };
-    }
-};
-
-exports.fetchCommentsByReviewId = async (id, queries) => {
-    const { limit, p } = queries;
-
-    const { LIMIT, OFFSET } = limitOffset(limit, p);
-
-    await validate.id(id);
-
-    const queryBody = `
-                SELECT review_id,comment_id, votes, created_at, username, body FROM comments
-                JOIN users
-                ON users.username = comments.author
-                WHERE review_id = $1
-                LIMIT $2 OFFSET $3;`;
-    const { rows } = await db.query(queryBody, [id, LIMIT, OFFSET]);
-
-    const body = await db.query(
-        `SELECT title FROM reviews WHERE review_id = $1`,
-        [id]
-    );
-
-    if (body.rows.length !== 0 && rows.length === 0) {
-        return rows;
-    }
-
-    return rows.length !== 0
-        ? rows
-        : Promise.reject({
-              status: 404,
-              error: 'Invalid query',
-          });
-};
-
-exports.addCommentToReview = async (id, { username, body }) => {
-    await validate.addComment(username, body);
-    await validate.id(id);
-    const queryBody = `INSERT INTO comments(author, review_id, created_at, body)
-    VALUES ($1,$2,$3,$4)
-    RETURNING *;`;
-
-    const user_test = await db.query(
-        `SELECT username FROM users WHERE username = $1`,
-        [username]
-    );
-
-    if (user_test.rows.length === 0) {
-        return Promise.reject({
-            status: 404,
-            error: 'username does not exist',
-        });
-    }
-
-    const { rows } = await db.query(queryBody, [
-        username,
-        id,
-        new Date(),
-        body,
-    ]);
-
-    return rows[0];
-};
-
-exports.addReview = async ({
-    owner,
-    title,
-    review_body,
-    designer,
-    category,
-}) => {
-    const inputVariables = [title, review_body, designer, category, owner];
-    for (i = 0; i < inputVariables.length; i++) {
-        if (!inputVariables[i] || typeof inputVariables[i] !== 'string')
-            return Promise.reject({
-                status: 400,
-                error: 'invalid key name or value',
-            });
-    }
-
-    const queryBody = `INSERT INTO reviews 
-        (title, review_body, designer ,category ,owner , created_at ) 
-        VALUES 
-        ($1,$2,$3,$4,$5,CURRENT_TIMESTAMP )
-        RETURNING *;`;
-
-    const { rows } = await db.query(queryBody, inputVariables);
-
-    return rows[0];
-};
-
-exports.removeReview = async (id) => {
-    await validate.id(id);
-    const queryBody = `DELETE FROM reviews WHERE review_id = $1 RETURNING *;`;
-    const { rows } = await db.query(queryBody, [id]);
-    if (rows.length === 0) {
-        return Promise.reject({
-            status: 400,
-            error: 'No reviews with this ID',
-        });
-    }
+  return comments;
 };

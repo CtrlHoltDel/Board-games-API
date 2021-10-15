@@ -1,25 +1,23 @@
 const express = require('express');
+const apiRouter = require('./routers/api.router');
+const cors = require('cors');
 const {
-  missingPath,
+  invalidEndpoint,
   customError,
   serverError,
-  pgErrors,
+  psqlError,
 } = require('./errors/errors');
-const apiRouter = require('./routers/api.routers');
-const cors = require('cors');
 
 const app = express();
-
 app.use(cors());
-
 app.use(express.json());
 
 app.use('/api', apiRouter);
 
-app.all('/*', missingPath);
+app.all('/*', invalidEndpoint);
 
 app.use(customError);
-app.use(pgErrors);
+app.use(psqlError);
 app.use(serverError);
 
 module.exports = app;

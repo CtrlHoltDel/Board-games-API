@@ -1,61 +1,63 @@
-const db = require('../db/connection');
-const validate = require('../utils/validation');
+const {
+  insertItem,
+  pullList,
+  deleteFromDb,
+  updateVote,
+} = require('../utils/utils');
+const { checkId, validateBody } = require('../utils/validation');
 
-exports.removeCommentById = async (id) => {
-    await validate.id(id);
+exports.insertComment = async (reviewId, input) => {
+  await checkId(reviewId);
+  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
 
-    const { rows } = await db.query(
-        `SELECT * FROM comments WHERE comment_id = $1`,
-        [id]
-    );
+  const { username, body } = input;
 
-    if (rows.length === 0)
-        return Promise.reject({
-            status: 404,
-            error: `No comment with an id of ${id}`,
-        });
+  await validateBody(
+    { username, body },
+    ['username', 'string'],
+    ['body', 'string']
+  );
 
-    const query_body = `DELETE FROM comments WHERE comment_id = $1;`;
-    await db.query(query_body, [id]);
+  if (!reviewCheck[0]) {
+    return Promise.reject({ status: 404, message: 'Non existent review' });
+  }
+
+  const comment = await insertItem(
+    'comments',
+    ['author', 'body', 'review_id'],
+    [username, body, reviewId]
+  );
+
+  return comment;
 };
 
-const amendVoteById = async (id, comment) => {
-    const query_body = `
-    UPDATE comments
-    SET votes = votes + ${comment.inc_votes}
-    WHERE comment_id = $1
-    RETURNING *;
-    `;
+exports.removeComment = async (commentId) => {
+  await checkId(commentId);
 
-    const { rows } = await db.query(query_body, [id]);
+  const comment = await pullList('comments', 'comment_id', commentId);
 
-    if (rows.length === 0) {
-        return Promise.reject({ status: 404, error: 'non existent comment' });
-    }
+  if (!comment[0]) {
+    return Promise.reject({ status: 404, message: 'Non-existent comment' });
+  }
 
-    return rows[0];
+  await deleteFromDb('comments', 'comment_id', commentId);
 };
 
-const amendBodyById = async (id, comment) => {
-    const query = `
-            UPDATE comments
-            SET body = $1
-            WHERE comment_id = $2
-            RETURNING *;
-            `;
+exports.amendComment = async (commentId, queries) => {
+  await checkId(commentId);
+  await validateBody(queries, ['inc_votes', 'number']);
 
-    const { rows } = await db.query(query, [comment, id]);
+  const { inc_votes } = queries;
 
-    return rows[0];
-};
+  const comment = await updateVote(
+    'comments',
+    inc_votes,
+    'comment_id',
+    commentId
+  );
 
-exports.amendComment = async (comment, id) => {
-    await validate.id(id);
-    await validate.bodyPatch(comment);
+  if (!comment)
+    return Promise.reject({ status: 404, message: 'Non-existent comment' });
 
-    if (comment.inc_votes !== undefined) {
-        return await amendVoteById(id, comment);
-    } else if (comment.edit !== undefined) {
-        return await amendBodyById(id, comment);
-    }
+  return comment;
 };

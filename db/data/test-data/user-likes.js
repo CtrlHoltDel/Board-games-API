@@ -1,18 +1,18 @@
 module.exports = [
   {
-    username: 'tickle122',
-    liked_review: 12,
+    username: 'mallionaire',
+    review_id: 7,
   },
   {
-    username: 'tickle122',
-    liked_review: 1,
+    username: 'philippaclaire9',
+    review_id: 1,
   },
   {
-    username: 'tickle122',
-    liked_review: 14,
+    username: 'bainesface',
+    review_id: 11,
   },
   {
-    username: 'tickle122',
-    liked_review: 13,
+    username: 'bainesface',
+    review_id: 1,
   },
 ];

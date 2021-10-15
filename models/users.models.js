@@ -1,17 +1,37 @@
-const db = require('../db/connection');
+const { pullAllData, pullList, insertItem } = require('../utils/utils');
+const { validateBody } = require('../utils/validation');
 
-exports.fetchAllUsers = async () => {
-    const { rows } = await db.query('SELECT username FROM users;');
-    return rows.map((user) => user.username);
+exports.fetchUsers = async () => {
+  const users = await pullAllData('users');
+  return users;
 };
 
-exports.fetchSingleUser = async (username) => {
-    const { rows } = await db.query(
-        'SELECT * FROM users WHERE username = $1;',
-        [username]
-    );
+exports.fetchUser = async (username) => {
+  const user = await pullList('users', 'username', username);
 
-    return rows.length !== 0
-        ? rows[0]
-        : Promise.reject({ status: 400, error: 'No user with this ID' });
+  if (!user.length) {
+    return Promise.reject({ status: 404, message: 'Non-existent user' });
+  }
+
+  return user[0];
+};
+
+exports.addUser = async (queries) => {
+  const { username, avatar_url, name, email } = queries;
+
+  await validateBody(
+    queries,
+    ['username', 'string'],
+    ['avatar_url', 'string'],
+    ['name', 'string'],
+    ['email', 'string']
+  );
+
+  const user = await insertItem(
+    'users',
+    ['username', 'avatar_url', 'name', 'email'],
+    [username, avatar_url, name, email]
+  );
+
+  return user;
 };

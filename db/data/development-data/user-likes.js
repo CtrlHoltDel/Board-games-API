@@ -1,58 +1,58 @@
 module.exports = [
   {
     username: 'tickle122',
-    liked_review: 12,
+    review_id: 12,
   },
   {
     username: 'tickle122',
-    liked_review: 1,
+    review_id: 1,
   },
   {
     username: 'tickle122',
-    liked_review: 14,
+    review_id: 14,
   },
   {
     username: 'tickle122',
-    liked_review: 13,
+    review_id: 13,
   },
   {
     username: 'grumpy19',
-    liked_review: 9,
+    review_id: 9,
   },
   {
     username: 'happyamy2016',
-    liked_review: 14,
+    review_id: 14,
   },
   {
     username: 'happyamy2016',
-    liked_review: 24,
+    review_id: 24,
   },
   {
     username: 'happyamy2016',
-    liked_review: 13,
+    review_id: 13,
   },
   {
     username: 'happyamy2016',
-    liked_review: 6,
+    review_id: 6,
   },
   {
     username: 'weegembump',
-    liked_review: 19,
+    review_id: 19,
   },
   {
     username: 'weegembump',
-    liked_review: 18,
+    review_id: 18,
   },
   {
     username: 'jessjelly',
-    liked_review: 3,
+    review_id: 3,
   },
   {
     username: 'jessjelly',
-    liked_review: 1,
+    review_id: 1,
   },
   {
     username: 'jessjelly',
-    liked_review: 22,
+    review_id: 22,
   },
 ];

@@ -1,84 +1,58 @@
-const validate = {};
-
-validate.allReviews = (queries) => {
-    const validQueries = ['sort_by', 'order', 'category', 'limit', 'p'];
-    const rejectObject = {
-        status: 400,
-        error: {
-            valid_queries: validQueries,
-        },
-    };
-
-    const keys = Object.keys(queries);
-
-    for (let i = 0; i < keys.length; i++) {
-        if (validQueries.indexOf(keys[i]) === -1)
-            return Promise.reject(rejectObject);
-    }
-
-    let { limit, order, p } = queries;
-
-    if ((limit && !Number(limit)) || (p && !Number(p))) {
-        return Promise.reject(rejectObject);
-    }
-
-    if (order) {
-        order = order.toLowerCase();
-        if (order !== 'asc' && order !== 'desc')
-            return Promise.reject(rejectObject);
-    }
+exports.checkId = (id) => {
+  if (!Number(id)) {
+    return Promise.reject({ status: 400, message: 'Bad request' });
+  }
 };
 
-validate.bodyPatch = (object) => {
-    if (
-        typeof object.inc_votes !== 'number' &&
-        typeof object.edit !== 'string'
-    ) {
-        return Promise.reject({
-            status: 400,
-            error: 'format to { inc_votes : number }',
-        });
+exports.validateBody = (queries, ...validKeys) => {
+  const rejectObject = { status: 400, message: 'Invalid body' };
+  const validKeyNames = validKeys.map((keys) => keys[0]);
+
+  for (let key in queries) {
+    if (!validKeyNames.includes(key)) return Promise.reject(rejectObject);
+  }
+
+  for (let i = 0; i < validKeys.length; i++) {
+    const [validKey, dataType] = validKeys[i];
+    if (typeof queries[validKey] !== dataType) {
+      return Promise.reject(rejectObject);
     }
+  }
 };
 
-validate.sortBy = (object) => {
-    const validColumns = [
-        'owner',
-        'title',
-        'review_id',
-        'category',
-        'votes',
-        'comment_count',
-        'created_at',
-    ];
-
-    if (validColumns.indexOf(object) === -1) {
-        return Promise.reject({
-            status: 404,
-            error: {
-                invalid_column: object,
-                valid_columns: [...validColumns.slice(0, 5), 'comment_count'],
-            },
-        });
-    }
+exports.validatePagination = (limit, p) => {
+  if (
+    !Number(limit) ||
+    (!Number(p) && Number(p) !== 0) ||
+    limit % 1 !== 0 ||
+    p % 1 !== 0
+  ) {
+    return Promise.reject({ status: 400, message: 'Invalid query' });
+  }
 };
 
-validate.addComment = (username, body) => {
-    if (typeof username !== 'string' || typeof body !== 'string') {
-        return Promise.reject({
-            status: 400,
-            valid_format: `{ username: string, body: string}`,
-        });
-    }
+exports.validateQueryValues = async ({
+  sort_by = 'votes',
+  order = 'desc',
+  limit = 10,
+  p = 0,
+}) => {
+  const validColumns = ['votes', 'category', 'comment_count', 'created_at'];
+  const validOrder = ['asc', 'ASC', 'desc', 'DESC'];
+
+  await this.validatePagination(limit, p);
+
+  if (!validColumns.includes(sort_by) || !validOrder.includes(order)) {
+    return Promise.reject({ status: 400, message: 'Invalid query' });
+  }
 };
 
-validate.id = (id) => {
-    if (!Number(id)) {
-        return Promise.reject({
-            status: 400,
-            error: 'id must be a number',
-        });
-    }
-};
+exports.validateQueryFields = (queries, greenList) => {
+  const objectKeys = Object.keys(queries);
 
-module.exports = validate;
+  for (let i = 0; i < objectKeys.length; i++) {
+    if (!greenList.includes(objectKeys[i])) {
+      return Promise.reject({ status: 404, message: 'Bad request' });
+    }
+  }
+};

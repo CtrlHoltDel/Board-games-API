@@ -1,20 +1,30 @@
-const { fetchAllUsers, fetchSingleUser } = require('../models/users.models');
+const { fetchUsers, fetchUser, addUser } = require('../models/users.models');
 
-exports.getAllUsers = async (req, res, next) => {
-    try {
-        const users = await fetchAllUsers();
-        res.status(200).send({ users });
-    } catch (err) {
-        next(err);
-    }
+exports.getUsers = async (req, res, next) => {
+  try {
+    const users = await fetchUsers();
+    res.status(200).send({ users });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getSingleUser = async (req, res, next) => {
-    const { username } = req.params;
-    try {
-        const user = await fetchSingleUser(username);
-        res.status(200).send({ user });
-    } catch (err) {
-        next(err);
-    }
+exports.getUser = async (req, res, next) => {
+  const { username } = req.params;
+  try {
+    const user = await fetchUser(username);
+    res.status(200).send({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postUser = async (req, res, next) => {
+  const { body } = req;
+  try {
+    const user = await addUser(body);
+    res.status(201).send({ user });
+  } catch (err) {
+    next(err);
+  }
 };

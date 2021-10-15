@@ -1,24 +1,37 @@
-exports.missingPath = (req, res) => {
-    res.status(404).send({ error: 'route not found' });
+exports.invalidEndpoint = (req, res) => {
+  res.status(404).send({ error: { message: 'Not found' } });
 };
 
 exports.customError = (error, req, res, next) => {
-    error.status === 400 || error.status === 404
-        ? res.status(error.status).send({ error })
-        : next(error);
+  if (error.status === 400 || error.status === 404) {
+    res.status(error.status).send({ error });
+  } else {
+    next(error);
+  }
 };
 
-exports.pgErrors = (error, req, res, next) => {
-    if (error.code === '23503') {
-        let invalidQuery = error.detail.match(/\(\w+\)/)[0].slice(1, -1);
-        if (invalidQuery === 'author') invalidQuery = 'owner';
-        res.status(400).send({ error: `Invalid ${invalidQuery}` });
-    } else {
-        next(error);
+exports.psqlError = (err, req, res, next) => {
+  if ((err.code = '23505')) {
+    if (/username/g.test(err.detail)) {
+      res.status(400).send({
+        status: 400,
+        message: 'Username already exists',
+      });
     }
+    if (/email/g.test(err.detail)) {
+      res.status(400).send({
+        status: 400,
+        message: 'Email already exists',
+      });
+    }
+  } else {
+    next(err);
+  }
 };
 
-exports.serverError = (error, req, res, next) => {
-    console.log(`${error} << Uncaught error`);
-    res.status(500).send({ error });
+exports.serverError = (err, req, res, next) => {
+  console.log(err, '<< Uncaught error');
+  res.status(500);
 };
+
+// module.exports = { invalidEndpoint };
