@@ -8,7 +8,6 @@ const commentsRouter = require('./comments.router');
 const usersRouter = require('./users.router');
 
 apiRouter.get('/', (req, res) => {
-  console.log(req.user.name);
   res.status(200).send({ endPoints });
 });
 

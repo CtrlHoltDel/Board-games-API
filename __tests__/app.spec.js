@@ -32,6 +32,8 @@ describe('/', () => {
   });
 });
 
+it('403: Returns an error without authentication', () => {});
+
 describe('/api', () => {
   describe('GET', () => {
     it('200: Responds with a JSON object containing information about all the endpoints', async () => {
@@ -40,6 +42,9 @@ describe('/api', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
       expect(body.endPoints).not.toBeUndefined();
+    });
+    it('403: Returns an error without authentication', async () => {
+      await request(app).get('/api').expect(403);
     });
   });
 });
@@ -805,8 +810,6 @@ describe('/api/users', () => {
           name: 'test_name',
         })
         .expect(400);
-
-      console.log(body.message);
 
       expect(body.message).toBe('Username already exists');
 
