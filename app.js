@@ -1,5 +1,6 @@
 const express = require('express');
 const apiRouter = require('./routers/api.router');
+const { login, authenticateToken } = require('./auth');
 const cors = require('cors');
 const {
   invalidEndpoint,
@@ -12,7 +13,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', apiRouter);
+app.post('/login', login);
+
+app.use('/api', authenticateToken, apiRouter);
 
 app.all('/*', invalidEndpoint);
 
