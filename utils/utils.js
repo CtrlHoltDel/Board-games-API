@@ -13,9 +13,9 @@ exports.pullCount = async (select, table, column, criteria) => {
   return rows[0].count;
 };
 
-exports.pullAllData = async (table) => {
-  const queryBody = format(`SELECT * FROM %I`, table);
-  const { rows } = await db.query(queryBody);
+exports.pullAllData = async (table, limit, p) => {
+  const queryBody = format(`SELECT * FROM %I LIMIT $1 OFFSET $2`, table);
+  const { rows } = await db.query(queryBody, [limit, p]);
   return rows;
 };
 

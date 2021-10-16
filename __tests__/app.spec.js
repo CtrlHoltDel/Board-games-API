@@ -617,6 +617,16 @@ describe('/api/users', () => {
       const { body } = await request(app).get('/api/users').expect(200);
       expect(body.users).toHaveLength(4);
     });
+    it('200: Works with pagination', async () => {
+      const { body } = await request(app).get('/api/users?limit=2').expect(200);
+      expect(body.users).toHaveLength(2);
+    });
+    it('400: Returns an error if passed a non-integer to limit or p', async () => {
+      const { body } = await request(app)
+        .get('/api/users?limit=not_a_number')
+        .expect(400);
+      expect(body.error.message).toBe('Invalid query');
+    });
   });
   describe('POST', () => {
     it('200: Adds a user to the database, returns the newly created user', async () => {

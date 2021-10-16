@@ -6,8 +6,12 @@ const {
   validatePagination,
 } = require('../utils/validation');
 
-exports.fetchUsers = async () => {
-  const users = await pullAllData('users');
+exports.fetchUsers = async (query) => {
+  const { limit = 10, p = 0 } = query;
+
+  await validatePagination(limit, p);
+
+  const users = await pullAllData('users', limit, p);
   return users;
 };
 

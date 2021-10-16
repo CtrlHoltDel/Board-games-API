@@ -6,8 +6,9 @@ const {
 } = require('../models/users.models');
 
 exports.getUsers = async (req, res, next) => {
+  const { query } = req;
   try {
-    const users = await fetchUsers();
+    const users = await fetchUsers(query);
     res.status(200).send({ users });
   } catch (err) {
     next(err);
