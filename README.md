@@ -1,5 +1,9 @@
 # Board game RESTful API
 
+## [Live version of the API.](https://chd-board-games.herokuapp.com/api)
+
+**_Hosted on [heroku](https://dashboard.heroku.com/)_**
+
 ## Overview
 
 This API is built using the back end portion of the PERN stack.
