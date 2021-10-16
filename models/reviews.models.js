@@ -11,6 +11,8 @@ const {
   validateBody,
   validateQueryValues,
   validateQueryFields,
+  validateExistence,
+  validatePagination,
 } = require('../utils/validation');
 
 exports.fetchReview = async (reviewId) => {
@@ -47,7 +49,12 @@ exports.fetchReviews = async (queries) => {
     'search',
   ]);
 
-  await validateQueryValues(queries);
+  await validateQueryValues(queries, [
+    'votes',
+    'category',
+    'comment_count',
+    'created_at',
+  ]);
 
   let {
     sort_by = 'created_at',
@@ -102,15 +109,21 @@ exports.amendReviewVote = async (votes, reviewId) => {
     : Promise.reject({ status: 404, message: 'Non-existent review' });
 };
 
-exports.fetchReviewComments = async (reviewId) => {
+exports.fetchReviewComments = async (reviewId, query) => {
+  let { limit = 10, p = 0 } = query;
+
+  if (+p) p = limit * (p - 1);
+
   await checkId(reviewId);
-  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
 
-  if (!reviewCheck[0]) {
-    return Promise.reject({ status: 404, message: 'Non existent review' });
-  }
+  await validateExistence(
+    'reviews',
+    'review_id',
+    reviewId,
+    'Non existent review'
+  );
 
-  const comments = await pullList('comments', 'review_id', reviewId);
+  const comments = await pullList('comments', 'review_id', reviewId, limit, p);
 
   return comments;
 };
@@ -118,12 +131,12 @@ exports.fetchReviewComments = async (reviewId) => {
 exports.amendReviewBody = async (input, reviewId) => {
   await checkId(reviewId);
   await validateBody(input, ['body', 'string']);
-
-  const reviewCheck = await pullList('reviews', 'review_id', reviewId);
-
-  if (!reviewCheck[0]) {
-    return Promise.reject({ status: 404, message: 'Non-existent review' });
-  }
+  await validateExistence(
+    'reviews',
+    'review_id',
+    reviewId,
+    'Non-existent review'
+  );
 
   const { body } = input;
 
@@ -136,4 +149,27 @@ exports.amendReviewBody = async (input, reviewId) => {
   );
 
   return review[0];
+};
+
+exports.fetchReviewLikes = async (reviewId, query) => {
+  const { limit = 10, p = 0 } = query;
+
+  await validatePagination(limit, p);
+
+  await checkId(reviewId);
+  await validateExistence(
+    'reviews',
+    'review_id',
+    reviewId,
+    'Non-existent review'
+  );
+  const queryBody = `
+      SELECT review_likes.username, avatar_url  FROM review_likes
+      LEFT OUTER JOIN users ON review_likes.username = users.username
+      WHERE review_id = $1
+      LIMIT $2 OFFSET $3
+      `;
+
+  const { rows } = await db.query(queryBody, [reviewId, limit, p]);
+  return rows;
 };

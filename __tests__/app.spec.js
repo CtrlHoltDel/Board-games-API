@@ -324,6 +324,20 @@ describe('/api/reviews/:review_id/comments', () => {
 
       expect(body.comments).toHaveLength(0);
     });
+    it('200: Works with pagination', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/2/comments?limit=2')
+        .expect(200);
+
+      expect(body.comments).toHaveLength(2);
+
+      const res = await request(app)
+        .get('/api/reviews/2/comments?limit=2&p=2')
+        .expect(200);
+
+      expect(res.body.comments).toHaveLength(1);
+      expect(res.body.comments[0].comment_id).toBe(5);
+    });
     it('400: Returns an error when passed a non-integer review_id', async () => {
       const { body } = await request(app)
         .get('/api/reviews/not_an_integer/comments')
@@ -407,6 +421,65 @@ describe('/api/reviews/:review_id/comments', () => {
         .expect(400);
 
       expect(body.error.message).toBe('Invalid body');
+    });
+  });
+});
+
+describe('/api/reviews/:review_id/likes', () => {
+  describe('GET', () => {
+    it('200: Responds with a full list of likes on the related review with the keys username and avatar url', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/11/likes')
+        .expect(200);
+
+      expect(body.users).toHaveLength(2);
+
+      body.users.forEach((user) => {
+        expect(user).toMatchObject({
+          username: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+    });
+    it('200: Responds with an empty array if passed a review id that exists but has no likes', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/3/likes')
+        .expect(200);
+
+      expect(body.users).toHaveLength(0);
+    });
+    it('200: Works with pagination', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/11/likes?limit=1')
+        .expect(200);
+
+      expect(body.users).toHaveLength(1);
+    });
+    it('400: Responds with an error if passed a non-integer as an id', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/not_a_number/likes')
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+    it('400: Returns an error if passed a non-integer to limit or p', async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/11/likes?limit=not_an_integer')
+        .expect(400);
+
+      expect(body.error.message).toBe('Invalid query');
+      const res = await request(app)
+        .get('/api/reviews/11/likes?limit=1&p=not_an_integer')
+        .expect(400);
+
+      expect(res.body.error.message).toBe('Invalid query');
+    });
+    it("404: Responds with an error if passed the id of a review that doesn't exist", async () => {
+      const { body } = await request(app)
+        .get('/api/reviews/2343434/likes')
+        .expect(404);
+
+      expect(body.error.message).toBe('Non-existent review');
     });
   });
 });
@@ -651,10 +724,51 @@ describe('/api/users/:username', () => {
 
 describe('/api/users/:username/likes', () => {
   describe('GET', () => {
-    it('200: Returns a list of all the reviews that have been liked by the specified user with title, owner, review_body, review_img_url, votes, category, owner created_at and liked at keys', async () => {});
-  });
+    it('200: Returns a list of all the reviews that have been liked by the specified user with title, owner, review_body, review_img_url, votes, category, owner created_at and liked at keys. Ordered by liked_at', async () => {
+      const { body } = await request(app)
+        .get('/api/users/bainesface/likes')
+        .expect(200);
 
-  // SELECT title, owner, review_body, review_img_url, votes, category, owner, created_at FROM review_likes
-  // JOIN reviews ON review_likes.review_id = reviews.review_id
-  // WHERE username = 'bainesface'
+      expect(body.reviews[0].title).toBe('Jenga');
+      expect(body.reviews[1].title).toBe(
+        "That's just what an evil person would say!"
+      );
+    });
+    it('200: Returns an empty array if user does exist but has no related likes', async () => {
+      const { body } = await request(app)
+        .get('/api/users/dav3rid/likes')
+        .expect(200);
+
+      expect(body.reviews).toHaveLength(0);
+    });
+    it('200: Works with pagination', async () => {
+      const { body } = await request(app)
+        .get('/api/users/bainesface/likes?limit=1&p=2')
+        .expect(200);
+
+      expect(body.reviews).toHaveLength(1);
+      expect(body.reviews[0].title).toBe(
+        "That's just what an evil person would say!"
+      );
+    });
+    it('400: Returns an error if passed a non-integer to limit or p', async () => {
+      const { body } = await request(app)
+        .get('/api/users/bainesface/likes?limit=not_an_integer')
+        .expect(400);
+
+      expect(body.error.message).toBe('Invalid query');
+      const res = await request(app)
+        .get('/api/users/bainesface/likes?limit=1&p=not_an_integer')
+        .expect(400);
+
+      expect(res.body.error.message).toBe('Invalid query');
+    });
+    it("404: Responds with an error if the username doesn't relate to a user", async () => {
+      const { body } = await request(app)
+        .get('/api/users/not_a_user/likes')
+        .expect(404);
+
+      expect(body.error.message).toBe('Non-existent user');
+    });
+  });
 });

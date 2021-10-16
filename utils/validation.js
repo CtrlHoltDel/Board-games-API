@@ -1,3 +1,5 @@
+const { pullList } = require('./utils');
+
 exports.checkId = (id) => {
   if (!Number(id)) {
     return Promise.reject({ status: 400, message: 'Bad request' });
@@ -31,13 +33,10 @@ exports.validatePagination = (limit, p) => {
   }
 };
 
-exports.validateQueryValues = async ({
-  sort_by = 'votes',
-  order = 'desc',
-  limit = 10,
-  p = 0,
-}) => {
-  const validColumns = ['votes', 'category', 'comment_count', 'created_at'];
+exports.validateQueryValues = async (
+  { sort_by = 'votes', order = 'desc', limit = 10, p = 0 },
+  validColumns
+) => {
   const validOrder = ['asc', 'ASC', 'desc', 'DESC'];
 
   await this.validatePagination(limit, p);
@@ -54,5 +53,13 @@ exports.validateQueryFields = (queries, greenList) => {
     if (!greenList.includes(objectKeys[i])) {
       return Promise.reject({ status: 404, message: 'Bad request' });
     }
+  }
+};
+
+exports.validateExistence = async (table, column, criteria, error) => {
+  const user = await pullList(table, column, criteria);
+
+  if (!user.length) {
+    return Promise.reject({ status: 404, message: error });
   }
 };

@@ -19,7 +19,7 @@ exports.pullAllData = async (table) => {
   return rows;
 };
 
-exports.pullList = async (table, column, criteria, limit = 10, p = 0) => {
+exports.pullList = async (table, column, criteria, limit, p) => {
   const queryBody = format(
     `
     SELECT * FROM %I 
@@ -55,7 +55,7 @@ exports.insertItem = async (table, values, input) => {
   return rows[0];
 };
 
-exports.updateVote = async (table, amount, column, id) => {
+exports.updateVote = async (table, amount, column, criteria) => {
   const queryBody = format(
     `UPDATE %I SET votes = votes + %s WHERE %I = $1 RETURNING *;`,
     table,
@@ -63,7 +63,7 @@ exports.updateVote = async (table, amount, column, id) => {
     column
   );
 
-  const { rows } = await db.query(queryBody, [id]);
+  const { rows } = await db.query(queryBody, [criteria]);
 
   return rows[0];
 };

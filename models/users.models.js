@@ -1,5 +1,10 @@
+const db = require('../db/connection');
 const { pullAllData, pullList, insertItem } = require('../utils/utils');
-const { validateBody } = require('../utils/validation');
+const {
+  validateBody,
+  validateExistence,
+  validatePagination,
+} = require('../utils/validation');
 
 exports.fetchUsers = async () => {
   const users = await pullAllData('users');
@@ -36,6 +41,23 @@ exports.addUser = async (queries) => {
   return user;
 };
 
-exports.fetchUserLIkes = async (username) => {
-  console.log(username);
+exports.fetchUserLikes = async (username, queries) => {
+  let { order = 'desc', limit = 10, p = 0 } = queries;
+
+  await validatePagination(limit, p);
+  await validateExistence('users', 'username', username, 'Non-existent user');
+
+  if (+p) p = limit * (p - 1);
+
+  const queryBody = `
+    SELECT liked_at, title, owner, review_body, review_img_url, votes, category, owner, created_at FROM review_likes
+    JOIN reviews ON review_likes.review_id = reviews.review_id
+    WHERE username = $1
+    ORDER BY liked_at ${order}
+    LIMIT $2 OFFSET $3;
+  `;
+
+  const { rows } = await db.query(queryBody, [username, limit, p]);
+
+  return rows;
 };

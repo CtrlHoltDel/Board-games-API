@@ -11,7 +11,7 @@ exports.customError = (error, req, res, next) => {
 };
 
 exports.psqlError = (err, req, res, next) => {
-  if ((err.code = '23505')) {
+  if (err.code === '23505') {
     if (/username/g.test(err.detail)) {
       res.status(400).send({
         status: 400,
@@ -33,5 +33,3 @@ exports.serverError = (err, req, res, next) => {
   console.log(err, '<< Uncaught error');
   res.status(500);
 };
-
-// module.exports = { invalidEndpoint };

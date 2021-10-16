@@ -2,7 +2,7 @@ const {
   fetchUsers,
   fetchUser,
   addUser,
-  fetchUserLIkes,
+  fetchUserLikes,
 } = require('../models/users.models');
 
 exports.getUsers = async (req, res, next) => {
@@ -36,8 +36,11 @@ exports.postUser = async (req, res, next) => {
 
 exports.getUserLikes = async (req, res, next) => {
   const { username } = req.params;
+  const { query } = req;
+
   try {
-    const reviews = await fetchUserLIkes(username);
+    const reviews = await fetchUserLikes(username, query);
+    res.status(200).send({ reviews });
   } catch (err) {
     next(err);
   }
