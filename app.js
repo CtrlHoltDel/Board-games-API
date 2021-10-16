@@ -15,7 +15,7 @@ app.use(express.json());
 
 app.post('/login', login);
 
-app.use('/api', authenticateToken, apiRouter);
+app.use('/api', apiRouter);
 
 app.all('/*', invalidEndpoint);
 
