@@ -17,7 +17,7 @@ exports.createTables = async () => {
   const users = `CREATE TABLE users (
     username VARCHAR PRIMARY KEY,
     avatar_url VARCHAR(255) DEFAULT 'https://i.imgur.com/5jd7Q7T.png',
-    name VARCHAR,
+    name VARCHAR DEFAULT 'Anon',
     email VARCHAR(50) UNIQUE
   );`;
 

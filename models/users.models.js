@@ -26,21 +26,32 @@ exports.fetchUser = async (username) => {
 };
 
 exports.addUser = async (queries) => {
-  const { username, avatar_url, name, email } = queries;
+  const { username, avatar_url = '', name = '', email } = queries;
 
   await validateBody(
-    queries,
+    { username, avatar_url, name, email },
     ['username', 'string'],
     ['avatar_url', 'string'],
     ['name', 'string'],
     ['email', 'string']
   );
 
-  const user = await insertItem(
-    'users',
-    ['username', 'avatar_url', 'name', 'email'],
-    [username, avatar_url, name, email]
-  );
+  console.log('test 2');
+
+  const rows = ['username', 'email'];
+  const values = [username, email];
+
+  if (avatar_url !== '') {
+    rows.push('avatar_url');
+    values.push(avatar_url);
+  }
+
+  if (name !== '') {
+    rows.push('name');
+    values.push(name);
+  }
+
+  const user = await insertItem('users', rows, values);
 
   return user;
 };

@@ -11,17 +11,17 @@ let token;
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
-beforeAll((done) => {
-  request(app)
-    .post('/login')
-    .send({
-      username: 'mallionaire',
-    })
-    .end((err, res) => {
-      token = res.body.accessToken;
-      done();
-    });
-});
+// beforeAll((done) => {
+//   request(app)
+//     .post('/login')
+//     .send({
+//       username: 'mallionaire',
+//     })
+//     .end((err, res) => {
+//       token = res.body.accessToken;
+//       done();
+//     });
+// });
 
 describe('/', () => {
   describe('GET', () => {
@@ -759,6 +759,60 @@ describe('/api/users', () => {
         email: 'new_email@gmail.com',
       });
     });
+    it('200: Ignores surplus keys', async () => {
+      const { body } = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          username: 'test_user',
+          avatar_url: 'http://image.com/image',
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+          surplus_keys: 'Ignores me',
+        })
+        .expect(201);
+
+      expect(body.user).toEqual({
+        username: 'test_user',
+        avatar_url: 'http://image.com/image',
+        name: 'test_name',
+        email: 'new_email@gmail.com',
+      });
+    });
+    it('200: Ignores missing avatar or name key', async () => {
+      const { body } = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          username: 'test_user',
+          name: 'test_name',
+          email: 'new_email@gmail.com',
+        })
+        .expect(201);
+
+      expect(body.user).toEqual({
+        username: 'test_user',
+        avatar_url: 'https://i.imgur.com/5jd7Q7T.png',
+        name: 'test_name',
+        email: 'new_email@gmail.com',
+      });
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          username: 'test_user2',
+          email: 'new_email@gmail.com2',
+        })
+        .expect(201);
+
+      expect(response.body.user).toEqual({
+        username: 'test_user2',
+        avatar_url: 'https://i.imgur.com/5jd7Q7T.png',
+        name: 'Anon',
+        email: 'new_email@gmail.com2',
+      });
+    });
     it('400: Returns an error if the body is incorrect', async () => {
       const { body } = await request(app)
         .post('/api/users')
@@ -784,20 +838,6 @@ describe('/api/users', () => {
         .expect(400);
 
       expect(invalidType.body.error.message).toBe('Invalid body');
-
-      const surplusKeys = await request(app)
-        .post('/api/users')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          username: 'test_user',
-          avatar_url: 'http://google.com/image',
-          extra_key: 'An extra key',
-          name: 'test_name',
-          email: 'new_email@gmail.com',
-        })
-        .expect(400);
-
-      expect(surplusKeys.body.error.message).toBe('Invalid body');
     });
     it('400: Returns an error if the username or email already exists', async () => {
       const { body } = await request(app)
