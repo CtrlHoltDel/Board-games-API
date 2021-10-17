@@ -1,15 +1,22 @@
 module.exports = [
   {
+    username: 'GuestUser',
+    avatar_url: 'https://i.imgur.com/5jd7Q7T.png',
+    name: 'Guest',
+    email: 'guest@boredgames.com',
+  },
+  {
     username: 'tickle122',
     name: 'Tom Tickle',
     avatar_url:
-      'https://www.spiritsurfers.net/monastery/wp-content/uploads/_41500270_mrtickle.jpg',
+      'https://www.bradleysfoods.co.uk/imagecache/a68bafd6-78ad-4f7b-8e5d-a84e01171978/NESTLE-Shreddies-415g_1000x1000.jpg',
     email: '4anass.yassine.7o@ciatico.site',
   },
   {
     username: 'grumpy19',
     name: 'Paul Grump',
-    avatar_url: 'https://www.tumbit.com/profile-image/4/original/mr-grumpy.jpg',
+    avatar_url:
+      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.VLgSeIpKnelPu-wCHmqW2gHaF7%26pid%3DApi&f=1',
     email: 'idej@ratnariantiarno.art',
   },
   {
@@ -22,7 +29,8 @@ module.exports = [
   {
     username: 'cooljmessy',
     name: 'Peter Messy',
-    avatar_url: 'https://i.imgur.com/WfX0Neu.jpg',
+    avatar_url:
+      'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallup.net%2Fwp-content%2Fuploads%2F2017%2F11%2F22%2F357720-Canon-camera.jpg&f=1&nofb=1',
     email: '6yassin_smara123h@icenhl.com',
   },
   {
@@ -36,7 +44,7 @@ module.exports = [
     username: 'jessjelly',
     name: 'Jess Jelly',
     avatar_url:
-      'https://s-media-cache-ak0.pinimg.com/564x/39/62/ec/3962eca164e60cf46f979c1f57d4078b.jpg',
+      'https://sadanduseless.b-cdn.net/wp-content/uploads/2020/03/funny-salad1.jpg',
     email: 'rnnibelchry@rtfsx.site',
   },
 ];
