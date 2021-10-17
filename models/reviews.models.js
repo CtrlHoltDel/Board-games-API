@@ -6,6 +6,7 @@ const {
   pullList,
   updateBody,
   insertItem,
+  deleteFromDb,
 } = require('../utils/utils');
 const {
   checkId,
@@ -201,4 +202,38 @@ exports.insertReview = async (body) => {
   const review = await insertItem('reviews', rows, values);
 
   return review;
+};
+
+exports.amendReviewLikes = async (reviewId, body) => {
+  const { username } = body;
+  await checkId(reviewId);
+  await validateBody(body, ['username', 'string']);
+  await validateExistence(
+    'reviews',
+    'review_id',
+    reviewId,
+    'Non existent review'
+  );
+  await validateExistence('users', 'username', username, 'Non existent user');
+
+  const { rows } = await db.query(
+    'SELECT * FROM review_likes WHERE username = $1 AND review_id = $2',
+    [username, reviewId]
+  );
+
+  if (rows.length) {
+    await db.query(
+      `DELETE FROM review_likes WHERE username = $1 AND review_id = $2
+    `,
+      [username, reviewId]
+    );
+  } else {
+    const addedLike = await insertItem(
+      'review_likes',
+      ['username', 'review_id'],
+      [username, reviewId]
+    );
+
+    return addedLike;
+  }
 };

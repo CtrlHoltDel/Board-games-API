@@ -241,7 +241,7 @@ describe('/api/reviews', () => {
         `SELECT * FROM reviews WHERE title = 'New review'`
       );
 
-      expect(rows.length).toBe(1);
+      expect(rows).toHaveLength(1);
     });
     it('201: Adds a review to the database if passed a body with a missing review_img_url and returns with the placeholder image', async () => {
       const { body } = await request(app)
@@ -599,7 +599,7 @@ describe('/api/reviews/:review_id/comments', () => {
 
 describe('/api/reviews/:review_id/likes', () => {
   describe('GET', () => {
-    it('200: Responds with a full list of likes on the related review with the keys username and avatar url', async () => {
+    it('200: Responds with a full list of users who have liked the related review with the keys username and avatar url', async () => {
       const { body } = await request(app)
         .get('/api/reviews/11/likes')
         .set('Authorization', `Bearer ${token}`)
@@ -659,6 +659,65 @@ describe('/api/reviews/:review_id/likes', () => {
         .expect(404);
 
       expect(body.error.message).toBe('Non-existent review');
+    });
+  });
+  describe('PATCH', () => {
+    it('201: When passed a user as the body on an unliked review adds a like. Returns the updated result.', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/3/likes')
+        .send({ username: 'philippaclaire9' })
+        .expect(201);
+
+      expect(body.like).toMatchObject({
+        rl_p_key: 5,
+        username: 'philippaclaire9',
+        review_id: 3,
+        liked_at: expect.any(String),
+      });
+    });
+    it('201: When passed a user who has previously liked a review, removes the like', async () => {
+      await request(app)
+        .patch('/api/reviews/11/likes')
+        .send({ username: 'bainesface' })
+        .expect(201);
+
+      const { rows } = await db.query(
+        `SELECT * FROM review_likes WHERE username = 'bainesface' AND review_id = 11`
+      );
+
+      expect(rows).toHaveLength(0);
+    });
+    it('400: Returns an error if passed an invalid body', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/3/likes')
+        .send({ not: 'philippaclaire9' })
+        .expect(400);
+
+      expect(body.error.message).toBe('Invalid body');
+    });
+    it('400: Returns an error if passed a non-integer review id', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/not_a_number/likes')
+        .send({ username: 'bainesface' })
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+    it('404: Returns an error if passed the id of a non-existent review', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/2344343/likes')
+        .send({ username: 'philippaclaire9' })
+        .expect(404);
+
+      expect(body.error.message).toBe('Non existent review');
+    });
+    it('404: Returns an error if passed an invalid user in the body', async () => {
+      const { body } = await request(app)
+        .patch('/api/reviews/2/likes')
+        .send({ username: 'Not_a_user' })
+        .expect(404);
+
+      expect(body.error.message).toBe('Non existent user');
     });
   });
 });

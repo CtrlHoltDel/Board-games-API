@@ -104,6 +104,12 @@ exports.endPoints = {
       },
     },
   },
+  'PATCH /api/reviews/:review_id/likes': {
+    description: 'Toggles the like of a specific user on the specified review',
+    'example body': {
+      username: 'tickle122',
+    },
+  },
   'DEL /api/comments/:comment_id': {
     description: 'Deletes the comment specified in the endpoint',
   },
