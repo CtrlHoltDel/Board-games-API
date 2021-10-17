@@ -36,17 +36,15 @@ exports.addUser = async (queries) => {
     ['email', 'string']
   );
 
-  console.log('test 2');
-
   const rows = ['username', 'email'];
   const values = [username, email];
 
-  if (avatar_url !== '') {
+  if (avatar_url) {
     rows.push('avatar_url');
     values.push(avatar_url);
   }
 
-  if (name !== '') {
+  if (name) {
     rows.push('name');
     values.push(name);
   }

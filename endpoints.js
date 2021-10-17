@@ -32,6 +32,18 @@ exports.endPoints = {
       },
     },
   },
+  'POST /api/reviews ': {
+    description: 'Adds a review to the database',
+    'example body': {
+      title: 'New review',
+      review_body: 'This is the body of the new review',
+      designer: 'Malto',
+      review_img_url:
+        'https://assets.dicebreaker.com/lords-of-waterdeep-board-game-layout.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/lords-of-waterdeep-board-game-layout.jpg',
+      category: 'dexterity',
+      owner: 'dav3rid',
+    },
+  },
   'GET /api/reviews/:review_id': {
     description: 'Serves the review specified in the endpoint',
     'example response': {

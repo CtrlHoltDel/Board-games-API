@@ -5,6 +5,7 @@ const {
   updateVote,
   pullList,
   updateBody,
+  insertItem,
 } = require('../utils/utils');
 const {
   checkId,
@@ -172,4 +173,32 @@ exports.fetchReviewLikes = async (reviewId, query) => {
 
   const { rows } = await db.query(queryBody, [reviewId, limit, p]);
   return rows;
+};
+
+exports.insertReview = async (body) => {
+  const { title, review_body, designer, review_img_url, category, owner } =
+    body;
+
+  const rows = ['title', 'review_body', 'designer', 'category', 'owner'];
+  const values = [title, review_body, designer, category, owner];
+
+  await validateExistence('users', 'username', owner, 'Invalid username');
+
+  await validateBody(
+    { title, review_body, designer, category, owner },
+    ['title', 'string'],
+    ['review_body', 'string'],
+    ['designer', 'string'],
+    ['category', 'string'],
+    ['owner', 'string']
+  );
+
+  if (review_img_url) {
+    rows.push('review_img_url');
+    values.push(review_img_url);
+  }
+
+  const review = await insertItem('reviews', rows, values);
+
+  return review;
 };

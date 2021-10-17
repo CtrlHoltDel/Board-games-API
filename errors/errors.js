@@ -24,6 +24,13 @@ exports.psqlError = (err, req, res, next) => {
         message: 'Email already exists',
       });
     }
+  } else if (err.code === '23503') {
+    if (/category/g.test(err.detail)) {
+      res.status(400).send({
+        status: 400,
+        message: 'Invalid category',
+      });
+    }
   } else {
     next(err);
   }

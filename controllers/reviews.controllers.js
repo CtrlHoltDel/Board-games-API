@@ -5,6 +5,7 @@ const {
   fetchReviewComments,
   amendReviewBody,
   fetchReviewLikes,
+  insertReview,
 } = require('../models/reviews.models');
 
 exports.getReview = async (req, res, next) => {
@@ -69,6 +70,17 @@ exports.getReviewLikes = async (req, res, next) => {
   try {
     const users = await fetchReviewLikes(review_id, query);
     res.status(200).send({ users });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postReview = async (req, res, next) => {
+  const { body } = req;
+  try {
+    const review = await insertReview(body);
+
+    res.status(201).send({ review });
   } catch (err) {
     next(err);
   }

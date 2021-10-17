@@ -4,24 +4,23 @@ const request = require('supertest');
 
 const testData = require('../db/data/test-data/index.js');
 const seed = require('../db/seeds/seed.js');
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Implc3NqZWxseSIsImlhdCI6MTYzNDM2MDUyNn0.f4kCBJ6SyhO4cH-iV8WEdvRiqb2ylbhfwn7Ick27Pv8
 
 let token;
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
-// beforeAll((done) => {
-//   request(app)
-//     .post('/login')
-//     .send({
-//       username: 'mallionaire',
-//     })
-//     .end((err, res) => {
-//       token = res.body.accessToken;
-//       done();
-//     });
-// });
+beforeAll((done) => {
+  request(app)
+    .post('/login')
+    .send({
+      username: 'mallionaire',
+    })
+    .end((err, res) => {
+      token = res.body.accessToken;
+      done();
+    });
+});
 
 describe('/', () => {
   describe('GET', () => {
@@ -31,8 +30,6 @@ describe('/', () => {
     });
   });
 });
-
-it('403: Returns an error without authentication', () => {});
 
 describe('/api', () => {
   describe('GET', () => {
@@ -209,6 +206,101 @@ describe('/api/reviews', () => {
         .get('/api/reviews?limit=2&p=1.3')
         .set('Authorization', `Bearer ${token}`)
         .expect(400);
+    });
+  });
+  describe('POST', () => {
+    it('201: Adds a review to the database. Returns the review at the time of posting. ', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'New review',
+          review_body: 'This is the body of the new review',
+          designer: 'Malto',
+          review_img_url:
+            'https://assets.dicebreaker.com/lords-of-waterdeep-board-game-layout.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/lords-of-waterdeep-board-game-layout.jpg',
+          category: 'dexterity',
+          owner: 'dav3rid',
+        })
+        .expect(201);
+
+      expect(body.review).toMatchObject({
+        category: 'dexterity',
+        created_at: expect.any(String),
+        designer: 'Malto',
+        owner: 'dav3rid',
+        review_body: 'This is the body of the new review',
+        review_id: 14,
+        review_img_url:
+          'https://assets.dicebreaker.com/lords-of-waterdeep-board-game-layout.jpg/BROK/resize/1920x1920%3E/format/jpg/quality/80/lords-of-waterdeep-board-game-layout.jpg',
+        title: 'New review',
+        votes: 0,
+      });
+
+      const { rows } = await db.query(
+        `SELECT * FROM reviews WHERE title = 'New review'`
+      );
+
+      expect(rows.length).toBe(1);
+    });
+    it('201: Adds a review to the database if passed a body with a missing review_img_url and returns with the placeholder image', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'New review',
+          review_body: 'This is the body of the new review',
+          designer: 'Malto',
+          category: 'dexterity',
+          owner: 'dav3rid',
+        })
+        .expect(201);
+
+      expect(body.review.review_img_url).toBe(
+        'https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg'
+      );
+    });
+    it('400: Returns an error if the body is missing a key ', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'New review',
+          review_body: 'This is the body of the new review',
+          owner: 'dav3rid',
+        })
+        .expect(400);
+      expect(body.error.message).toBe('Invalid body');
+    });
+    it('400: Returns an error if passed an invalid category', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'New review',
+          review_body: 'This is the body of the new review',
+          designer: 'Malto',
+          category: 'not_a_category',
+          owner: 'dav3rid',
+        })
+        .expect(400);
+
+      expect(body.message).toBe('Invalid category');
+    });
+    it('404: Returns an error if passed an invalid user', async () => {
+      const { body } = await request(app)
+        .post('/api/reviews')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'New review',
+          review_body: 'This is the body of the new review',
+          designer: 'Malto',
+          category: 'dexterity',
+          owner: 'not_a_user',
+        })
+        .expect(404);
+
+      expect(body.error.message).toBe('Invalid username');
     });
   });
 });
@@ -491,7 +583,7 @@ describe('/api/reviews/:review_id/comments', () => {
 
       expect(body.error.message).toBe('Non existent review');
     });
-    it('400: Returns a 404 if the body is missing a property', async () => {
+    it('400: Returns an error if the body is missing a key', async () => {
       const { body } = await request(app)
         .post('/api/reviews/3/comments')
         .set('Authorization', `Bearer ${token}`)
@@ -758,6 +850,12 @@ describe('/api/users', () => {
         name: 'test_name',
         email: 'new_email@gmail.com',
       });
+
+      const { rows } = await db.query(
+        "SELECT * FROM users WHERE username = 'test_user'"
+      );
+
+      expect(rows).toHaveLength(1);
     });
     it('200: Ignores surplus keys', async () => {
       const { body } = await request(app)
