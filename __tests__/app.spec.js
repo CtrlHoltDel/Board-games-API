@@ -1057,10 +1057,10 @@ describe('/api/users/:username/likes', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(body.reviews[0].title).toBe('Jenga');
-      expect(body.reviews[1].title).toBe(
-        "That's just what an evil person would say!"
-      );
+      console.log(body);
+
+      expect(body.reviews[0].review_id).toBe(2);
+      expect(body.reviews[1].review_id).toBe(11);
     });
     it('200: Returns an empty array if user does exist but has no related likes', async () => {
       const { body } = await request(app)
@@ -1077,9 +1077,6 @@ describe('/api/users/:username/likes', () => {
         .expect(200);
 
       expect(body.reviews).toHaveLength(1);
-      expect(body.reviews[0].title).toBe(
-        "That's just what an evil person would say!"
-      );
     });
     it('400: Returns an error if passed a non-integer to limit or p', async () => {
       const { body } = await request(app)

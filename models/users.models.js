@@ -63,8 +63,7 @@ exports.fetchUserLikes = async (username, queries) => {
   if (+p) p = limit * (p - 1);
 
   const queryBody = `
-    SELECT liked_at, title, owner, review_body, review_img_url, votes, category, owner, created_at FROM review_likes
-    JOIN reviews ON review_likes.review_id = reviews.review_id
+    SELECT review_id, liked_at FROM review_likes
     WHERE username = $1
     ORDER BY liked_at ${order}
     LIMIT $2 OFFSET $3;
