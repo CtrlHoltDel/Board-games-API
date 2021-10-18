@@ -74,7 +74,7 @@ exports.fetchReviews = async (queries) => {
   }
 
   const queryBody = `
-    SELECT reviews.review_id, title, review_body, designer, review_img_url, reviews.votes, category, owner, reviews.created_at, COUNT(comment_id) :: INT as comment_count 
+    SELECT reviews.review_id, title, designer, review_img_url, reviews.votes, category, owner, reviews.created_at, COUNT(comment_id) :: INT as comment_count 
     FROM reviews
     LEFT OUTER JOIN comments
     ON reviews.review_id = comments.review_id

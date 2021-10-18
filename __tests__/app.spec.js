@@ -103,7 +103,6 @@ describe('/api/reviews', () => {
           review_id: expect.any(Number),
           comment_count: expect.any(Number),
           title: expect.any(String),
-          review_body: expect.any(String),
           designer: expect.any(String),
           review_img_url: expect.any(String),
           votes: expect.any(Number),
