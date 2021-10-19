@@ -1047,6 +1047,52 @@ describe('/api/users/:username', () => {
       expect(body.error.message).toBe('Non-existent user');
     });
   });
+  describe.only('PATCH', () => {
+    it('201: Updates the user when passed the correct params', async () => {
+      const { body } = await request(app)
+        .patch('/api/users/bainesface')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(201)
+        .send({
+          avatar_url: 'http://image.com/new_url',
+          email: 'new@email.com',
+          name: 'name_change',
+        });
+
+      expect(body.user[0]).toMatchObject({
+        username: 'bainesface',
+        avatar_url: 'http://image.com/new_url',
+        email: 'new@email.com',
+        name: 'name_change',
+      });
+    });
+    it('400: Returns an error if passed an invalid body', async () => {
+      const { body } = await request(app)
+        .patch('/api/users/bainesface')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400)
+        .send({
+          avatar_url_incorrect: 'http://image.com/new_url',
+          email: 'new@email.com',
+          name: 'name_change',
+        });
+
+      expect(body.error.message).toBe('Invalid body');
+    });
+    it('404: Returns an error if passed an invalid username', async () => {
+      const { body } = await request(app)
+        .patch('/api/users/not_a_username')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404)
+        .send({
+          avatar_url: 'http://image.com/new_url',
+          email: 'new@email.com',
+          name: 'name_change',
+        });
+
+      console.log(body);
+    });
+  });
 });
 
 describe('/api/users/:username/likes', () => {

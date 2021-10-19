@@ -1,5 +1,10 @@
 const db = require('../db/connection');
-const { pullAllData, pullList, insertItem } = require('../utils/utils');
+const {
+  pullAllData,
+  pullList,
+  insertItem,
+  updateBody,
+} = require('../utils/utils');
 const {
   validateBody,
   validateExistence,
@@ -70,6 +75,32 @@ exports.fetchUserLikes = async (username, queries) => {
   `;
 
   const { rows } = await db.query(queryBody, [username, limit, p]);
+
+  return rows;
+};
+
+exports.amendUser = async (username, body) => {
+  await validateExistence('users', 'username', username, 'Non-existent user');
+  await validateBody(
+    body,
+    ['avatar_url', 'string'],
+    ['email', 'string'],
+    ['name', 'string']
+  );
+  console.log(username, body);
+  const { avatar_url, email, name } = body;
+  const queryBody = `
+    UPDATE users
+    SET avatar_url = $1, name = $2, email = $3
+    WHERE username = $4 RETURNING *
+    `;
+
+  const { rows } = await db.query(queryBody, [
+    avatar_url,
+    name,
+    email,
+    username,
+  ]);
 
   return rows;
 };
