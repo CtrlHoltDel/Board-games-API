@@ -125,9 +125,12 @@ exports.fetchReviewComments = async (reviewId, query) => {
     'Non existent review'
   );
 
-  const comments = await pullList('comments', 'review_id', reviewId, limit, p);
+  const { rows } = await db.query(
+    'SELECT * FROM comments WHERE review_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+    [reviewId, limit, p]
+  );
 
-  return comments;
+  return rows;
 };
 
 exports.amendReviewBody = async (input, reviewId) => {

@@ -10,17 +10,17 @@ let token;
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
-beforeAll((done) => {
-  request(app)
-    .post('/login')
-    .send({
-      username: 'mallionaire',
-    })
-    .end((err, res) => {
-      token = res.body.accessToken;
-      done();
-    });
-});
+// beforeAll((done) => {
+//   request(app)
+//     .post('/login')
+//     .send({
+//       username: 'mallionaire',
+//     })
+//     .end((err, res) => {
+//       token = res.body.accessToken;
+//       done();
+//     });
+// });
 
 describe('/', () => {
   describe('GET', () => {
@@ -500,7 +500,7 @@ describe('/api/reviews/:review_id/comments', () => {
         .expect(200);
 
       expect(res.body.comments).toHaveLength(1);
-      expect(res.body.comments[0].comment_id).toBe(5);
+      expect(res.body.comments[0].comment_id).toBe(4);
     });
     it('400: Returns an error when passed a non-integer review_id', async () => {
       const { body } = await request(app)
