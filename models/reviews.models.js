@@ -13,8 +13,9 @@ const {
   validateBody,
   validateQueryValues,
   validateQueryFields,
-  validateExistence,
   validatePagination,
+  validateReview,
+  validateUser,
 } = require('../utils/validation');
 
 exports.fetchReview = async (reviewId) => {
@@ -128,12 +129,7 @@ exports.fetchReviewComments = async (reviewId, query) => {
 
   await checkId(reviewId);
 
-  await validateExistence(
-    'reviews',
-    'review_id',
-    reviewId,
-    'Non existent review'
-  );
+  await validateReview(reviewId);
 
   const { rows } = await db.query(
     'SELECT * FROM comments WHERE review_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
@@ -146,13 +142,8 @@ exports.fetchReviewComments = async (reviewId, query) => {
 exports.amendReviewBody = async (input, reviewId) => {
   await checkId(reviewId);
   await validateBody(input, ['body', 'string']);
-  await validateExistence(
-    'reviews',
-    'review_id',
-    reviewId,
-    'Non-existent review'
-  );
 
+  await validateReview(reviewId);
   const { body } = input;
 
   const review = await updateBody(
@@ -170,14 +161,9 @@ exports.fetchReviewLikes = async (reviewId, query) => {
   const { limit = 10, p = 0 } = query;
 
   await validatePagination(limit, p);
-
   await checkId(reviewId);
-  await validateExistence(
-    'reviews',
-    'review_id',
-    reviewId,
-    'Non-existent review'
-  );
+  await validateReview(reviewId);
+
   const queryBody = `
       SELECT review_likes.username, avatar_url  FROM review_likes
       LEFT OUTER JOIN users ON review_likes.username = users.username
@@ -196,7 +182,7 @@ exports.insertReview = async (body) => {
   const rows = ['title', 'review_body', 'designer', 'category', 'owner'];
   const values = [title, review_body, designer, category, owner];
 
-  await validateExistence('users', 'username', owner, 'Invalid username');
+  await validateUser(owner);
 
   await validateBody(
     { title, review_body, designer, category, owner },
@@ -221,13 +207,8 @@ exports.amendReviewLikes = async (reviewId, body) => {
   const { username } = body;
   await checkId(reviewId);
   await validateBody(body, ['username', 'string']);
-  await validateExistence(
-    'reviews',
-    'review_id',
-    reviewId,
-    'Non existent review'
-  );
-  await validateExistence('users', 'username', username, 'Non existent user');
+  await validateReview(reviewId);
+  await validateUser(username);
 
   const { rows } = await db.query(
     'SELECT * FROM review_likes WHERE username = $1 AND review_id = $2',

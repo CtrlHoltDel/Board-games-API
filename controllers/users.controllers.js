@@ -4,6 +4,8 @@ const {
   addUser,
   fetchUserLikes,
   amendUser,
+  fetchUserComments,
+  fetchUserReviews,
 } = require('../models/users.models');
 
 exports.getUsers = async (req, res, next) => {
@@ -42,6 +44,30 @@ exports.getUserLikes = async (req, res, next) => {
 
   try {
     const reviews = await fetchUserLikes(username, query);
+    res.status(200).send({ reviews });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserComments = async (req, res, next) => {
+  const { username } = req.params;
+  const { query } = req;
+
+  try {
+    const comments = await fetchUserComments(username, query);
+    res.status(200).send({ comments });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserReviews = async (req, res, next) => {
+  const { username } = req.params;
+  const { query } = req;
+
+  try {
+    const reviews = await fetchUserReviews(username, query);
     res.status(200).send({ reviews });
   } catch (err) {
     next(err);

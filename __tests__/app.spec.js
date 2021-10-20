@@ -303,7 +303,7 @@ describe('/api/reviews', () => {
         })
         .expect(404);
 
-      expect(body.error.message).toBe('Invalid username');
+      expect(body.error.message).toBe('Non-existent user');
     });
   });
 });
@@ -542,7 +542,7 @@ describe('/api/reviews/:review_id/comments', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(404);
 
-      expect(body.error.message).toBe('Non existent review');
+      expect(body.error.message).toBe('Non-existent review');
     });
   });
   describe('POST', () => {
@@ -606,7 +606,7 @@ describe('/api/reviews/:review_id/comments', () => {
         })
         .expect(404);
 
-      expect(body.error.message).toBe('Non existent review');
+      expect(body.error.message).toBe('Non-existent review');
     });
     it('400: Returns an error if the body is missing a key', async () => {
       const { body } = await request(app)
@@ -734,7 +734,7 @@ describe('/api/reviews/:review_id/likes', () => {
         .send({ username: 'philippaclaire9' })
         .expect(404);
 
-      expect(body.error.message).toBe('Non existent review');
+      expect(body.error.message).toBe('Non-existent review');
     });
     it('404: Returns an error if passed an invalid user in the body', async () => {
       const { body } = await request(app)
@@ -742,7 +742,7 @@ describe('/api/reviews/:review_id/likes', () => {
         .send({ username: 'Not_a_user' })
         .expect(404);
 
-      expect(body.error.message).toBe('Non existent user');
+      expect(body.error.message).toBe('Non-existent user');
     });
   });
 });
@@ -1121,7 +1121,7 @@ describe('/api/users/:username', () => {
 
 describe('/api/users/:username/likes', () => {
   describe('GET', () => {
-    it('200: Returns a list of all the reviews that have been liked by the specified user with title, owner, review_body, review_img_url, votes, category, owner created_at and liked at keys. Ordered by liked_at', async () => {
+    it('200: Returns a list of all the reviews that have been liked by the specified user', async () => {
       const { body } = await request(app)
         .get('/api/users/bainesface/likes')
         .set('Authorization', `Bearer ${token}`)
@@ -1146,7 +1146,7 @@ describe('/api/users/:username/likes', () => {
 
       expect(body.reviews).toHaveLength(1);
     });
-    it('400: Returns an error if passed a non-integer to limit or p', async () => {
+    it('400: Returns an error if passed a non-integer limit or p', async () => {
       const { body } = await request(app)
         .get('/api/users/bainesface/likes?limit=not_an_integer')
         .set('Authorization', `Bearer ${token}`)
@@ -1168,5 +1168,76 @@ describe('/api/users/:username/likes', () => {
 
       expect(body.error.message).toBe('Non-existent user');
     });
+  });
+});
+
+describe('/api/users/:username/comments', () => {
+  it('200: Returns a list of all comments made by a specific user', async () => {
+    const { body } = await request(app)
+      .get('/api/users/bainesface/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.comments).toHaveLength(2);
+  });
+  it('200: Returns an empty array if user does exist but has no related comments', async () => {
+    const { body } = await request(app)
+      .get('/api/users/dav3rid/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.comments).toEqual([]);
+  });
+  it('200: Works with pagination', async () => {
+    const { body } = await request(app)
+      .get('/api/users/bainesface/comments?limit=1&p=2')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.comments).toHaveLength(1);
+    expect(body.comments[0].comment_id).toBe(4);
+  });
+  it('400: Returns an error if passed a non-integer limit or p', async () => {
+    await request(app)
+      .get('/api/users/bainesface/comments?limit=not_an_integer&p=2')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400);
+  });
+  it('404: Returns an error if passed a non-existent user', async () => {
+    await request(app)
+      .get('/api/users/not_a_user/comments')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
+  });
+});
+
+describe('/api/users/:username/reviews', () => {
+  it('200: Returns a full list of reviews made by the specified user and works with pagination', async () => {
+    const { body } = await request(app)
+      .get('/api/users/mallionaire/reviews?limit=4&p=2')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.reviews).toHaveLength(4);
+  });
+  it('200: Returns an empty array if passed a user that exists but has no reviews', async () => {
+    const { body } = await request(app)
+      .get('/api/users/dav3rid/reviews')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(body.reviews).toHaveLength(0);
+  });
+  it('400: Returns an error if passed a non-integer limit or p', async () => {
+    await request(app)
+      .get('/api/users/dav3rid/reviews?limit=not_a_number')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400);
+  });
+  it('404: Returns an error if passed a non-existent user', async () => {
+    await request(app)
+      .get('/api/users/not_a_user/reviews')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404);
   });
 });

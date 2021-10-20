@@ -20,7 +20,7 @@ exports.insertComment = async (reviewId, input) => {
   );
 
   if (!reviewCheck[0]) {
-    return Promise.reject({ status: 404, message: 'Non existent review' });
+    return Promise.reject({ status: 404, message: 'Non-existent review' });
   }
 
   const comment = await insertItem(

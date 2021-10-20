@@ -7,8 +7,9 @@ const {
 } = require('../utils/utils');
 const {
   validateBody,
-  validateExistence,
+
   validatePagination,
+  validateUser,
 } = require('../utils/validation');
 
 exports.fetchUsers = async (query) => {
@@ -28,6 +29,50 @@ exports.fetchUser = async (username) => {
   }
 
   return user[0];
+};
+
+exports.fetchUserLikes = async (username, queries) => {
+  let { order = 'desc', limit = 10, p = 0 } = queries;
+
+  await validatePagination(limit, p);
+  await validateUser(username);
+
+  if (+p) p = limit * (p - 1);
+
+  const queryBody = `
+    SELECT * FROM review_likes JOIN reviews ON reviews.review_id = review_likes.review_id
+    WHERE username = $1
+    ORDER BY liked_at ${order}
+    LIMIT $2 OFFSET $3;
+  `;
+
+  const { rows } = await db.query(queryBody, [username, limit, p]);
+
+  return rows;
+};
+
+exports.fetchUserComments = async (username, queries) => {
+  let { limit = 10, p = 0 } = queries;
+
+  await validatePagination(limit, p);
+  await validateUser(username);
+
+  if (+p) p = limit * (p - 1);
+
+  const res = await pullList('comments', 'author', username, limit, p);
+
+  return res;
+};
+
+exports.fetchUserReviews = async (username, queries) => {
+  const { limit = 10, p = 0 } = queries;
+
+  await validatePagination(limit, p);
+  await validateUser(username);
+
+  const res = await pullList('reviews', 'owner', username, limit, p);
+
+  return res;
 };
 
 exports.addUser = async (queries) => {
@@ -59,35 +104,14 @@ exports.addUser = async (queries) => {
   return user;
 };
 
-exports.fetchUserLikes = async (username, queries) => {
-  let { order = 'desc', limit = 10, p = 0 } = queries;
-
-  await validatePagination(limit, p);
-  await validateExistence('users', 'username', username, 'Non-existent user');
-
-  if (+p) p = limit * (p - 1);
-
-  const queryBody = `
-    SELECT review_id, liked_at FROM review_likes
-    WHERE username = $1
-    ORDER BY liked_at ${order}
-    LIMIT $2 OFFSET $3;
-  `;
-
-  const { rows } = await db.query(queryBody, [username, limit, p]);
-
-  return rows;
-};
-
 exports.amendUser = async (username, body) => {
-  await validateExistence('users', 'username', username, 'Non-existent user');
+  await validateUser(username);
   await validateBody(
     body,
     ['avatar_url', 'string'],
     ['email', 'string'],
     ['name', 'string']
   );
-  console.log(username, body);
   const { avatar_url, email, name } = body;
   const queryBody = `
     UPDATE users

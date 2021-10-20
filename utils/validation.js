@@ -63,3 +63,21 @@ exports.validateExistence = async (table, column, criteria, error) => {
     return Promise.reject({ status: 404, message: error });
   }
 };
+
+exports.validateUser = async (username) => {
+  await this.validateExistence(
+    'users',
+    'username',
+    username,
+    'Non-existent user'
+  );
+};
+
+exports.validateReview = async (review) => {
+  await this.validateExistence(
+    'reviews',
+    'review_id',
+    review,
+    'Non-existent review'
+  );
+};
