@@ -414,6 +414,28 @@ describe('/api/reviews/:review_id', () => {
       expect(body.error.message).toBe('Non-existent review');
     });
   });
+  describe('DEL', () => {
+    it('204: deletes a review from the database', async () => {
+      await request(app)
+        .del('/api/reviews/2')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204);
+
+      const { rows } = await db.query(
+        `SELECT * FROM reviews WHERE review_id = 2`
+      );
+
+      expect(rows).toHaveLength(0);
+    });
+    it('400: Responds with an error if passed a non-integer as the id', async () => {
+      const { body } = await request(app)
+        .del('/api/reviews/not_a_number')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400);
+
+      expect(body.error.message).toBe('Bad request');
+    });
+  });
 });
 
 describe('/api/reviews/:review_id/edit', () => {
@@ -1093,8 +1115,6 @@ describe('/api/users/:username', () => {
           email: 'new@email.com',
           name: 'name_change',
         });
-
-      console.log(body);
     });
   });
 });
@@ -1106,8 +1126,6 @@ describe('/api/users/:username/likes', () => {
         .get('/api/users/bainesface/likes')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
-
-      console.log(body);
 
       expect(body.reviews[0].review_id).toBe(2);
       expect(body.reviews[1].review_id).toBe(11);

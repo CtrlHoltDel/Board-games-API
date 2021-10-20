@@ -8,12 +8,17 @@ const {
   getReviewLikes,
   postReview,
   patchReviewLikes,
+  delReview,
 } = require('../controllers/reviews.controllers');
 
 const reviewsRouter = require('express').Router();
 
 reviewsRouter.route('/').get(getReviews).post(postReview);
-reviewsRouter.route('/:review_id').get(getReview).patch(patchReviewVote);
+reviewsRouter
+  .route('/:review_id')
+  .get(getReview)
+  .patch(patchReviewVote)
+  .delete(delReview);
 reviewsRouter.patch('/:review_id/edit', patchReviewBody);
 reviewsRouter
   .route('/:review_id/likes')

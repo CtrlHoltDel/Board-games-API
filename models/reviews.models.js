@@ -250,3 +250,8 @@ exports.amendReviewLikes = async (reviewId, body) => {
     return addedLike;
   }
 };
+
+exports.removeReview = async (id) => {
+  await checkId(id);
+  await deleteFromDb('reviews', 'review_id', id);
+};

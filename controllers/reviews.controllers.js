@@ -7,6 +7,7 @@ const {
   fetchReviewLikes,
   insertReview,
   amendReviewLikes,
+  removeReview,
 } = require('../models/reviews.models');
 
 exports.getReview = async (req, res, next) => {
@@ -94,6 +95,18 @@ exports.patchReviewLikes = async (req, res, next) => {
   try {
     const like = await amendReviewLikes(review_id, body);
     res.status(201).send({ like });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.delReview = async (req, res, next) => {
+  const { review_id } = req.params;
+
+  const { body } = req;
+  try {
+    await removeReview(review_id, body);
+    res.sendStatus(204);
   } catch (err) {
     next(err);
   }
