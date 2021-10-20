@@ -68,9 +68,11 @@ exports.fetchReviews = async (queries) => {
   } = queries;
 
   let AND = '';
+  let ANDCOUNT = '';
 
   if (category) {
     AND = `AND reviews.category = $4`;
+    ANDCOUNT = `AND reviews.category = $2`;
   }
 
   const queryBody = `
@@ -87,15 +89,23 @@ exports.fetchReviews = async (queries) => {
   if (+p) p = limit * (p - 1);
 
   let values = [limit, p, `%${search}%`];
+  let countValues = [`%${search}%`];
 
   if (category) {
     values.push(category.replace('_', ' '));
+    countValues.push(category.replace('_', ' '));
   }
 
-  const updatedQueryBody = format(queryBody, sort_by, order);
-  const { rows } = await db.query(updatedQueryBody, values);
+  const getCount = `SELECT COUNT(review_id) :: INT as review_count FROM reviews WHERE title iLIKE $1
+  ${ANDCOUNT}`;
 
-  return rows;
+  const updatedCountBody = format(getCount, sort_by, order);
+
+  const updatedQueryBody = format(queryBody, sort_by, order);
+  const { rows: reviews } = await db.query(updatedQueryBody, values);
+  const { rows } = await db.query(updatedCountBody, countValues);
+
+  return { reviews, count: rows[0].review_count };
 };
 
 exports.amendReviewVote = async (votes, reviewId) => {

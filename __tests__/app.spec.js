@@ -112,6 +112,8 @@ describe('/api/reviews', () => {
         });
       });
 
+      expect(body.count).toBe(13);
+
       expect(body.reviews[0].review_id).toBe(7);
       expect(body.reviews[1].review_id).toBe(4);
       expect(body.reviews).toHaveLength(10);
@@ -122,6 +124,7 @@ describe('/api/reviews', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
+      expect(body.count).toBe(1);
       expect(body.reviews).toHaveLength(1);
     });
     it('200: Returns no error for a valid category that returns an empty array', async () => {
@@ -155,6 +158,7 @@ describe('/api/reviews', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
+      expect(body.count).toBe(13);
       expect(body.reviews).toHaveLength(5);
       expect(body.reviews[0].review_id).toBe(9);
     });
@@ -1047,7 +1051,7 @@ describe('/api/users/:username', () => {
       expect(body.error.message).toBe('Non-existent user');
     });
   });
-  describe.only('PATCH', () => {
+  describe('PATCH', () => {
     it('201: Updates the user when passed the correct params', async () => {
       const { body } = await request(app)
         .patch('/api/users/bainesface')
