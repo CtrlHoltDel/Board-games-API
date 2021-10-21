@@ -59,9 +59,14 @@ exports.fetchUserComments = async (username, queries) => {
 
   if (+p) p = limit * (p - 1);
 
-  const res = await pullList('comments', 'author', username, limit, p);
+  const { rows } = await db.query(
+    `SELECT comment_id, author, comments.review_id, comments.votes, comments.body, reviews.title FROM comments
+  JOIN reviews ON comments.review_id = reviews.review_id
+  WHERE author = $1 LIMIT $2 OFFSET $3`,
+    [username, limit, p]
+  );
 
-  return res;
+  return rows;
 };
 
 exports.fetchUserReviews = async (username, queries) => {
