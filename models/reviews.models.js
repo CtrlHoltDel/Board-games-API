@@ -132,7 +132,7 @@ exports.fetchReviewComments = async (reviewId, query) => {
   await validateReview(reviewId);
 
   const { rows } = await db.query(
-    'SELECT * FROM comments WHERE review_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+    `SELECT comment_id, author, comments.review_id, title, comments.votes, comments.created_at, comments.body FROM comments JOIN reviews ON comments.review_id = reviews.review_id WHERE comments.review_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
     [reviewId, limit, p]
   );
 

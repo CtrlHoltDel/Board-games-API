@@ -502,6 +502,16 @@ describe('/api/reviews/:review_id/comments', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
+      expect(body.comments[0]).toMatchObject({
+        comment_id: expect.any(Number),
+        author: expect.any(String),
+        review_id: expect.any(Number),
+        title: expect.any(String),
+        votes: expect.any(Number),
+        created_at: expect.any(String),
+        body: expect.any(String),
+      });
+
       expect(body.comments).toHaveLength(3);
     });
     it('200: Returns an empty array if passed an id that exists but is related to no comments', async () => {
