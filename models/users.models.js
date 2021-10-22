@@ -13,7 +13,7 @@ const {
 } = require('../utils/validation');
 
 exports.fetchUsers = async (query) => {
-  const { limit = 10, p = 0 } = query;
+  let { limit = 10, p = 0 } = query;
 
   if (+p) p = limit * (p - 1);
 

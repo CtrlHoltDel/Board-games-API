@@ -909,15 +909,15 @@ describe('/api/users', () => {
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      console.log(body);
       expect(body.users).toHaveLength(4);
       expect(body.count).toBe('4');
     });
     it('200: Works with pagination', async () => {
       const { body } = await request(app)
-        .get('/api/users?limit=2')
+        .get('/api/users?limit=2&p=2')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
+
       expect(body.users).toHaveLength(2);
     });
     it('400: Returns an error if passed a non-integer to limit or p', async () => {
