@@ -158,6 +158,14 @@ exports.endPoints = {
       },
     },
   },
+  'PATCH /api/users/:username': {
+    description: 'Modifies the user specified in the endpoint',
+    'example body': {
+      avatar_url: 'http://image.com/new_url',
+      email: 'new@email.com',
+      name: 'name_change',
+    },
+  },
   'GET /api/users/:username/likes': {
     description:
       'Serves a list of all reviews liked by the user specified in the endpoint',
