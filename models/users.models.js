@@ -15,10 +15,16 @@ const {
 exports.fetchUsers = async (query) => {
   const { limit = 10, p = 0 } = query;
 
+  if (+p) p = limit * (p - 1);
+
+  const { rows } = await db.query(`SELECT COUNT(username) FROM users;`);
+
+  const count = rows[0].count;
+
   await validatePagination(limit, p);
 
   const users = await pullAllData('users', limit, p);
-  return users;
+  return { users, count };
 };
 
 exports.fetchUser = async (username) => {

@@ -11,8 +11,9 @@ const {
 exports.getUsers = async (req, res, next) => {
   const { query } = req;
   try {
-    const users = await fetchUsers(query);
-    res.status(200).send({ users });
+    const { users, count } = await fetchUsers(query);
+    console.log(count);
+    res.status(200).send({ users, count });
   } catch (err) {
     next(err);
   }

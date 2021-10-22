@@ -908,7 +908,10 @@ describe('/api/users', () => {
         .get('/api/users')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
+
+      console.log(body);
       expect(body.users).toHaveLength(4);
+      expect(body.count).toBe('4');
     });
     it('200: Works with pagination', async () => {
       const { body } = await request(app)
