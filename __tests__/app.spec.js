@@ -1119,7 +1119,7 @@ describe('/api/users/:username', () => {
       expect(body.error.message).toBe('Invalid body');
     });
     it('404: Returns an error if passed an invalid username', async () => {
-      const { body } = await request(app)
+      await request(app)
         .patch('/api/users/not_a_username')
         .set('Authorization', `Bearer ${token}`)
         .expect(404)
@@ -1128,6 +1128,18 @@ describe('/api/users/:username', () => {
           email: 'new@email.com',
           name: 'name_change',
         });
+    });
+  });
+  describe.only('DELETE', () => {
+    it('204: Deletes the specified user from the database ', async () => {
+      await request(app)
+        .del('/api/users/bainesface')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204);
+      const { rows } = await db.query(
+        `SELECT * FROM users WHERE username = 'bainesface'`
+      );
+      expect(rows).toHaveLength(0);
     });
   });
 });

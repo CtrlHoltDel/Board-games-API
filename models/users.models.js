@@ -1,9 +1,11 @@
+const format = require('pg-format');
 const db = require('../db/connection');
 const {
   pullAllData,
   pullList,
   insertItem,
   updateBody,
+  deleteFromDb,
 } = require('../utils/utils');
 const {
   validateBody,
@@ -138,4 +140,9 @@ exports.amendUser = async (username, body) => {
   ]);
 
   return rows;
+};
+
+exports.removeUser = async (username) => {
+  const queryBody = format(`DELETE from USERS where username = %L`, username);
+  await db.query(queryBody);
 };

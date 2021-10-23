@@ -6,6 +6,7 @@ const {
   amendUser,
   fetchUserComments,
   fetchUserReviews,
+  removeUser,
 } = require('../models/users.models');
 
 exports.getUsers = async (req, res, next) => {
@@ -83,6 +84,17 @@ exports.patchUser = async (req, res, next) => {
 
     res.status(201).send({ user });
   } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteUser = async (req, res, next) => {
+  const { username } = req.params;
+  try {
+    await removeUser(username);
+    res.sendStatus(204);
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };
