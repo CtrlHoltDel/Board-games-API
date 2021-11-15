@@ -1064,7 +1064,7 @@ describe("/api/users", () => {
   });
 });
 
-describe("/api/users/:username", () => {
+describe.only("/api/users/:username", () => {
   describe("GET", () => {
     it("200: Responds with a single user object", async () => {
       const { body } = await request(app)
@@ -1077,6 +1077,9 @@ describe("/api/users/:username", () => {
           "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
         name: "haz",
         email: "7not.foun@codb.site",
+        likes: 1,
+        comments: 2,
+        reviews: 11,
       });
     });
     it("404: Responds with an error if username doesn't relate to a user", async () => {
@@ -1197,7 +1200,7 @@ describe("/api/users/:username/likes", () => {
   });
 });
 
-describe("/api/users/:username/likes/review_id", () => {
+describe("/api/users/:username/likes/:review_id", () => {
   describe("GET", () => {
     it("200: Returns an object containing a boolean depending on if a user has liked a comment.", async () => {
       const { body: truthy } = await request(app)

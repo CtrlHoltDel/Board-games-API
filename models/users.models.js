@@ -1,6 +1,11 @@
 const format = require("pg-format");
 const db = require("../db/connection");
-const { pullAllData, pullList, insertItem } = require("../utils/utils");
+const {
+  pullAllData,
+  pullList,
+  insertItem,
+  pullCount,
+} = require("../utils/utils");
 const {
   validateBody,
 
@@ -27,12 +32,22 @@ exports.fetchUsers = async (query) => {
 
 exports.fetchUser = async (username) => {
   const user = await pullList("users", "username", username);
+  const comments = await pullCount("author", "comments", "author", username);
+  const reviews = await pullCount("owner", "reviews", "owner", username);
+  const likes = await pullCount(
+    "username",
+    "review_likes",
+    "username",
+    username
+  );
+
+  console.log(comments);
 
   if (!user.length) {
     return Promise.reject({ status: 404, message: "Non-existent user" });
   }
 
-  return user[0];
+  return { ...user[0], comments, reviews, likes };
 };
 
 exports.fetchUserLikes = async (username, queries) => {
