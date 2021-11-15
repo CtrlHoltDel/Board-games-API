@@ -1,5 +1,5 @@
-const format = require('pg-format');
-const db = require('../db/connection');
+const format = require("pg-format");
+const db = require("../db/connection");
 const {
   pullCount,
   updateVote,
@@ -7,7 +7,7 @@ const {
   updateBody,
   insertItem,
   deleteFromDb,
-} = require('../utils/utils');
+} = require("../utils/utils");
 const {
   checkId,
   validateBody,
@@ -16,60 +16,60 @@ const {
   validatePagination,
   validateReview,
   validateUser,
-} = require('../utils/validation');
+} = require("../utils/validation");
 
 exports.fetchReview = async (reviewId) => {
   await checkId(reviewId);
 
-  const review = await pullList('reviews', 'review_id', reviewId);
+  const review = await pullList("reviews", "review_id", reviewId);
 
   const comment_count = await pullCount(
-    'comment_id',
-    'comments',
-    'review_id',
+    "comment_id",
+    "comments",
+    "review_id",
     reviewId
   );
 
   const likes = await pullCount(
-    'review_id',
-    'review_likes',
-    'review_id',
+    "review_id",
+    "review_likes",
+    "review_id",
     reviewId
   );
 
   return review[0]
     ? { ...review[0], comment_count, likes }
-    : Promise.reject({ status: 404, message: 'Non-existent review' });
+    : Promise.reject({ status: 404, message: "Non-existent review" });
 };
 
 exports.fetchReviews = async (queries) => {
   await validateQueryFields(queries, [
-    'sort_by',
-    'order',
-    'category',
-    'limit',
-    'p',
-    'search',
+    "sort_by",
+    "order",
+    "category",
+    "limit",
+    "p",
+    "search",
   ]);
 
   await validateQueryValues(queries, [
-    'votes',
-    'category',
-    'comment_count',
-    'created_at',
+    "votes",
+    "category",
+    "comment_count",
+    "created_at",
   ]);
 
   let {
-    sort_by = 'created_at',
-    order = 'desc',
+    sort_by = "created_at",
+    order = "desc",
     category,
     limit = 10,
     p = 0,
-    search = '%%',
+    search = "%%",
   } = queries;
 
-  let AND = '';
-  let ANDCOUNT = '';
+  let AND = "";
+  let ANDCOUNT = "";
 
   if (category) {
     AND = `AND reviews.category = $4`;
@@ -93,8 +93,8 @@ exports.fetchReviews = async (queries) => {
   let countValues = [`%${search}%`];
 
   if (category) {
-    values.push(category.replace('_', ' '));
-    countValues.push(category.replace('_', ' '));
+    values.push(category.replace("_", " "));
+    countValues.push(category.replace("_", " "));
   }
 
   const getCount = `SELECT COUNT(review_id) :: INT as review_count FROM reviews WHERE title iLIKE $1
@@ -111,15 +111,15 @@ exports.fetchReviews = async (queries) => {
 
 exports.amendReviewVote = async (votes, reviewId) => {
   await checkId(reviewId);
-  await validateBody(votes, ['inc_votes', 'number']);
+  await validateBody(votes, ["inc_votes", "number"]);
 
   const { inc_votes } = votes;
 
-  const review = await updateVote('reviews', inc_votes, 'review_id', reviewId);
+  const review = await updateVote("reviews", inc_votes, "review_id", reviewId);
 
   return review
     ? review
-    : Promise.reject({ status: 404, message: 'Non-existent review' });
+    : Promise.reject({ status: 404, message: "Non-existent review" });
 };
 
 exports.fetchReviewComments = async (reviewId, query) => {
@@ -128,29 +128,29 @@ exports.fetchReviewComments = async (reviewId, query) => {
   if (+p) p = limit * (p - 1);
 
   await checkId(reviewId);
-
   await validateReview(reviewId);
+  const count = await pullCount("author", "comments", "review_id", reviewId);
 
-  const { rows } = await db.query(
+  const { rows: comments } = await db.query(
     `SELECT comment_id, author, comments.review_id, title, comments.votes, comments.created_at, comments.body FROM comments JOIN reviews ON comments.review_id = reviews.review_id WHERE comments.review_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
     [reviewId, limit, p]
   );
 
-  return rows;
+  return { comments, count };
 };
 
 exports.amendReviewBody = async (input, reviewId) => {
   await checkId(reviewId);
-  await validateBody(input, ['body', 'string']);
+  await validateBody(input, ["body", "string"]);
 
   await validateReview(reviewId);
   const { body } = input;
 
   const review = await updateBody(
-    'reviews',
-    'review_body',
+    "reviews",
+    "review_body",
     body,
-    'review_id',
+    "review_id",
     reviewId
   );
 
@@ -179,26 +179,26 @@ exports.insertReview = async (body) => {
   const { title, review_body, designer, review_img_url, category, owner } =
     body;
 
-  const rows = ['title', 'review_body', 'designer', 'category', 'owner'];
+  const rows = ["title", "review_body", "designer", "category", "owner"];
   const values = [title, review_body, designer, category, owner];
 
   await validateUser(owner);
 
   await validateBody(
     { title, review_body, designer, category, owner },
-    ['title', 'string'],
-    ['review_body', 'string'],
-    ['designer', 'string'],
-    ['category', 'string'],
-    ['owner', 'string']
+    ["title", "string"],
+    ["review_body", "string"],
+    ["designer", "string"],
+    ["category", "string"],
+    ["owner", "string"]
   );
 
   if (review_img_url) {
-    rows.push('review_img_url');
+    rows.push("review_img_url");
     values.push(review_img_url);
   }
 
-  const review = await insertItem('reviews', rows, values);
+  const review = await insertItem("reviews", rows, values);
 
   return review;
 };
@@ -206,12 +206,12 @@ exports.insertReview = async (body) => {
 exports.amendReviewLikes = async (reviewId, body) => {
   const { username } = body;
   await checkId(reviewId);
-  await validateBody(body, ['username', 'string']);
+  await validateBody(body, ["username", "string"]);
   await validateReview(reviewId);
   await validateUser(username);
 
   const { rows } = await db.query(
-    'SELECT * FROM review_likes WHERE username = $1 AND review_id = $2',
+    "SELECT * FROM review_likes WHERE username = $1 AND review_id = $2",
     [username, reviewId]
   );
 
@@ -223,8 +223,8 @@ exports.amendReviewLikes = async (reviewId, body) => {
     );
   } else {
     const addedLike = await insertItem(
-      'review_likes',
-      ['username', 'review_id'],
+      "review_likes",
+      ["username", "review_id"],
       [username, reviewId]
     );
 
@@ -234,5 +234,5 @@ exports.amendReviewLikes = async (reviewId, body) => {
 
 exports.removeReview = async (id) => {
   await checkId(id);
-  await deleteFromDb('reviews', 'review_id', id);
+  await deleteFromDb("reviews", "review_id", id);
 };

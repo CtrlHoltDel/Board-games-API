@@ -1,18 +1,14 @@
-const format = require('pg-format');
-const db = require('../db/connection');
-const {
-  pullAllData,
-  pullList,
-  insertItem,
-  updateBody,
-  deleteFromDb,
-} = require('../utils/utils');
+const format = require("pg-format");
+const db = require("../db/connection");
+const { pullAllData, pullList, insertItem } = require("../utils/utils");
 const {
   validateBody,
 
   validatePagination,
   validateUser,
-} = require('../utils/validation');
+  validateReview,
+  checkId,
+} = require("../utils/validation");
 
 exports.fetchUsers = async (query) => {
   let { limit = 10, p = 0 } = query;
@@ -25,22 +21,22 @@ exports.fetchUsers = async (query) => {
 
   await validatePagination(limit, p);
 
-  const users = await pullAllData('users', limit, p);
+  const users = await pullAllData("users", limit, p);
   return { users, count };
 };
 
 exports.fetchUser = async (username) => {
-  const user = await pullList('users', 'username', username);
+  const user = await pullList("users", "username", username);
 
   if (!user.length) {
-    return Promise.reject({ status: 404, message: 'Non-existent user' });
+    return Promise.reject({ status: 404, message: "Non-existent user" });
   }
 
   return user[0];
 };
 
 exports.fetchUserLikes = async (username, queries) => {
-  let { order = 'desc', limit = 10, p = 0 } = queries;
+  let { order = "desc", limit = 10, p = 0 } = queries;
 
   await validatePagination(limit, p);
   await validateUser(username);
@@ -83,36 +79,36 @@ exports.fetchUserReviews = async (username, queries) => {
   await validatePagination(limit, p);
   await validateUser(username);
 
-  const res = await pullList('reviews', 'owner', username, limit, p);
+  const res = await pullList("reviews", "owner", username, limit, p);
 
   return res;
 };
 
 exports.addUser = async (queries) => {
-  const { username, avatar_url = '', name = '', email } = queries;
+  const { username, avatar_url = "", name = "", email } = queries;
 
   await validateBody(
     { username, avatar_url, name, email },
-    ['username', 'string'],
-    ['avatar_url', 'string'],
-    ['name', 'string'],
-    ['email', 'string']
+    ["username", "string"],
+    ["avatar_url", "string"],
+    ["name", "string"],
+    ["email", "string"]
   );
 
-  const rows = ['username', 'email'];
+  const rows = ["username", "email"];
   const values = [username, email];
 
   if (avatar_url) {
-    rows.push('avatar_url');
+    rows.push("avatar_url");
     values.push(avatar_url);
   }
 
   if (name) {
-    rows.push('name');
+    rows.push("name");
     values.push(name);
   }
 
-  const user = await insertItem('users', rows, values);
+  const user = await insertItem("users", rows, values);
 
   return user;
 };
@@ -121,9 +117,9 @@ exports.amendUser = async (username, body) => {
   await validateUser(username);
   await validateBody(
     body,
-    ['avatar_url', 'string'],
-    ['email', 'string'],
-    ['name', 'string']
+    ["avatar_url", "string"],
+    ["email", "string"],
+    ["name", "string"]
   );
   const { avatar_url, email, name } = body;
   const queryBody = `
@@ -145,4 +141,19 @@ exports.amendUser = async (username, body) => {
 exports.removeUser = async (username) => {
   const queryBody = format(`DELETE from USERS where username = %L`, username);
   await db.query(queryBody);
+};
+
+exports.fetchUserLikeByReview = async (username, reviewId) => {
+  await checkId(reviewId);
+  await validateUser(username);
+  await validateReview(reviewId);
+
+  const { rows } = await db.query(
+    `SELECT * FROM review_likes WHERE username = $1 AND review_id = $2`,
+    [username, reviewId]
+  );
+
+  console.log(rows);
+
+  return !rows.length ? { liked: false } : { liked: true };
 };
