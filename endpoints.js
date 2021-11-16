@@ -174,10 +174,6 @@ exports.endPoints = {
     description:
       "Serves a list of all comments made by the user specified in the endpoint",
   },
-  "GET /api/users/:username/reviews": {
-    description:
-      "Serves a list of all reviews made by the user specified in the endpoint",
-  },
   "GET /api/users/:username/likes/:review_id": {
     description:
       "returns an object containing a boolean showing if a user has liked a specific review",
