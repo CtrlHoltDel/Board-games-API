@@ -86,9 +86,12 @@ exports.fetchUserComments = async (username, queries) => {
   const { rows } = await db.query(
     `SELECT comment_id, author, comments.review_id, comments.votes, comments.body, reviews.title, comments.created_at FROM comments
   JOIN reviews ON comments.review_id = reviews.review_id
-  WHERE author = $1 LIMIT $2 OFFSET $3`,
+  WHERE author = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+
     [username, limit, p]
   );
+
+  console.log(rows);
 
   const count = await pullCount("author", "comments", "author", username);
 
