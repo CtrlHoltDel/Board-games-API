@@ -1,7 +1,7 @@
-const db = require('../connection');
+const db = require("../connection");
 
 exports.dropTables = async () => {
-  const tables = ['review_likes', 'comments', 'reviews', 'categories', 'users'];
+  const tables = ["review_likes", "comments", "reviews", "categories", "users"];
 
   for (let i = 0; i < tables.length; i++) {
     await db.query(`DROP TABLE IF EXISTS ${tables[i]};`);
@@ -26,7 +26,7 @@ exports.createTables = async () => {
     title VARCHAR(255) NOT NULL,
     review_body VARCHAR(1000) NOT NULL, 
     designer VARCHAR(80) NOT NULL,
-    review_img_url VARCHAR(255) DEFAULT 'https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg',
+    review_img_url VARCHAR(255) DEFAULT 'https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=',
     votes INT DEFAULT 0,
     category VARCHAR NOT NULL REFERENCES categories(slug) ON DELETE CASCADE,
     owner VARCHAR NOT NULL REFERENCES users(username) ON DELETE CASCADE,
