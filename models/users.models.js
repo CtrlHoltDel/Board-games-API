@@ -65,7 +65,14 @@ exports.fetchUserLikes = async (username, queries) => {
 
   const { rows } = await db.query(queryBody, [username, limit, p]);
 
-  return rows;
+  const count = await pullCount(
+    "review_id",
+    "review_likes",
+    "username",
+    username
+  );
+
+  return { reviews: rows, count };
 };
 
 exports.fetchUserComments = async (username, queries) => {

@@ -45,8 +45,8 @@ exports.getUserLikes = async (req, res, next) => {
   const { query } = req;
 
   try {
-    const reviews = await fetchUserLikes(username, query);
-    res.status(200).send({ reviews });
+    const object = await fetchUserLikes(username, query);
+    res.status(200).send(object);
   } catch (err) {
     next(err);
   }

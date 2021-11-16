@@ -1156,7 +1156,7 @@ describe("/api/users/:username", () => {
   });
 });
 
-describe("/api/users/:username/likes", () => {
+describe.only("/api/users/:username/likes", () => {
   describe("GET", () => {
     it("200: Returns a list of all the reviews that have been liked by the specified user", async () => {
       const { body } = await request(app)
@@ -1166,6 +1166,7 @@ describe("/api/users/:username/likes", () => {
 
       expect(body.reviews[0].review_id).toBe(2);
       expect(body.reviews[1].review_id).toBe(11);
+      expect(body.count).toBe(2);
     });
     it("200: Returns an empty array if user does exist but has no related likes", async () => {
       const { body } = await request(app)
