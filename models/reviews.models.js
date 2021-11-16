@@ -50,6 +50,7 @@ exports.fetchReviews = async (queries) => {
     "limit",
     "p",
     "search",
+    "username",
   ]);
 
   await validateQueryValues(queries, [
@@ -57,6 +58,7 @@ exports.fetchReviews = async (queries) => {
     "category",
     "comment_count",
     "created_at",
+    "username",
   ]);
 
   let {
@@ -66,26 +68,8 @@ exports.fetchReviews = async (queries) => {
     limit = 10,
     p = 0,
     search = "%%",
+    username,
   } = queries;
-
-  let AND = "";
-  let ANDCOUNT = "";
-
-  if (category) {
-    AND = `AND reviews.category = $4`;
-    ANDCOUNT = `AND reviews.category = $2`;
-  }
-
-  const queryBody = `
-    SELECT reviews.review_id, title, designer, review_img_url, reviews.votes, category, owner, reviews.created_at, COUNT(comment_id) :: INT as comment_count 
-    FROM reviews
-    LEFT OUTER JOIN comments
-    ON reviews.review_id = comments.review_id
-    WHERE title iLIKE $3
-    ${AND}
-    GROUP BY reviews.review_id
-    ORDER BY %I %s
-    LIMIT $1 OFFSET $2`;
 
   if (+p) p = limit * (p - 1);
 
@@ -97,12 +81,45 @@ exports.fetchReviews = async (queries) => {
     countValues.push(category.replace("_", " "));
   }
 
+  if (username) {
+    values.push(username.replace("_", " "));
+    countValues.push(username.replace("_", " "));
+  }
+
+  let ANDCAT = "";
+  let ANDCATCOUNT = "";
+  let ANDUSER = "";
+  let ANDUSERCOUNT = "";
+
+  if (category) {
+    ANDCAT = `AND reviews.category = $${values.length}`;
+    ANDCATCOUNT = `AND reviews.category = $${countValues.length}`;
+  }
+
+  if (username) {
+    ANDUSER = `AND reviews.owner = $${values.length}`;
+    ANDUSERCOUNT = `AND reviews.owner = $${countValues.length}`;
+  }
+
   const getCount = `SELECT COUNT(review_id) :: INT as review_count FROM reviews WHERE title iLIKE $1
-  ${ANDCOUNT}`;
+  ${ANDCATCOUNT}
+  ${ANDUSERCOUNT}`;
+
+  const queryBody = `
+  SELECT reviews.review_id, title, designer, review_img_url, reviews.votes, category, owner, reviews.created_at, COUNT(comment_id) :: INT as comment_count 
+  FROM reviews
+  LEFT OUTER JOIN comments
+  ON reviews.review_id = comments.review_id
+  WHERE title iLIKE $3
+  ${ANDCAT}
+  ${ANDUSER}
+  GROUP BY reviews.review_id
+  ORDER BY %I %s
+  LIMIT $1 OFFSET $2`;
 
   const updatedCountBody = format(getCount, sort_by, order);
-
   const updatedQueryBody = format(queryBody, sort_by, order);
+
   const { rows: reviews } = await db.query(updatedQueryBody, values);
   const { rows } = await db.query(updatedCountBody, countValues);
 

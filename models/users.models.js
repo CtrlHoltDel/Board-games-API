@@ -41,8 +41,6 @@ exports.fetchUser = async (username) => {
     username
   );
 
-  console.log(comments);
-
   if (!user.length) {
     return Promise.reject({ status: 404, message: "Non-existent user" });
   }
@@ -86,17 +84,6 @@ exports.fetchUserComments = async (username, queries) => {
   );
 
   return rows;
-};
-
-exports.fetchUserReviews = async (username, queries) => {
-  const { limit = 10, p = 0 } = queries;
-
-  await validatePagination(limit, p);
-  await validateUser(username);
-
-  const res = await pullList("reviews", "owner", username, limit, p);
-
-  return res;
 };
 
 exports.addUser = async (queries) => {
@@ -167,8 +154,6 @@ exports.fetchUserLikeByReview = async (username, reviewId) => {
     `SELECT * FROM review_likes WHERE username = $1 AND review_id = $2`,
     [username, reviewId]
   );
-
-  console.log(rows);
 
   return !rows.length ? { liked: false } : { liked: true };
 };

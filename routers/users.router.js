@@ -21,6 +21,5 @@ usersRouter
 usersRouter.get("/:username/likes", getUserLikes);
 usersRouter.get("/:username/likes/:review_id", getUserLikeByReview);
 usersRouter.get("/:username/comments", getUserComments);
-usersRouter.get("/:username/reviews", getUserReviews);
 
 module.exports = usersRouter;

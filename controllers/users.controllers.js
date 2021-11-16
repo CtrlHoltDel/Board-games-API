@@ -64,18 +64,6 @@ exports.getUserComments = async (req, res, next) => {
   }
 };
 
-exports.getUserReviews = async (req, res, next) => {
-  const { username } = req.params;
-  const { query } = req;
-
-  try {
-    const reviews = await fetchUserReviews(username, query);
-    res.status(200).send({ reviews });
-  } catch (err) {
-    next(err);
-  }
-};
-
 exports.patchUser = async (req, res, next) => {
   const { username } = req.params;
   const { body } = req;

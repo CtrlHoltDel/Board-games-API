@@ -91,6 +91,14 @@ describe("/api/reviews", () => {
         expect(body.reviews[0].review_id).toBe(3);
         expect(body.reviews[1].review_id).toBe(2);
       });
+      it("200: username", async () => {
+        const { body } = await request(app)
+          .get("/api/reviews?username=mallionaire")
+          .expect(200);
+
+        expect(body.reviews).toHaveLength(10);
+        expect(body.count).toBe(11);
+      });
     });
     it("200:Responds with an array of reviews including comment count and excluding the body defaulted to be ordered in in ascending order by date. Limits the results to a length of 10", async () => {
       const { body } = await request(app)
@@ -1064,7 +1072,7 @@ describe("/api/users", () => {
   });
 });
 
-describe.only("/api/users/:username", () => {
+describe("/api/users/:username", () => {
   describe("GET", () => {
     it("200: Responds with a single user object", async () => {
       const { body } = await request(app)
@@ -1264,37 +1272,6 @@ describe("/api/users/:username/comments", () => {
   it("404: Returns an error if passed a non-existent user", async () => {
     await request(app)
       .get("/api/users/not_a_user/comments")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(404);
-  });
-});
-
-describe("/api/users/:username/reviews", () => {
-  it("200: Returns a full list of reviews made by the specified user and works with pagination", async () => {
-    const { body } = await request(app)
-      .get("/api/users/mallionaire/reviews?limit=4&p=2")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(200);
-
-    expect(body.reviews).toHaveLength(4);
-  });
-  it("200: Returns an empty array if passed a user that exists but has no reviews", async () => {
-    const { body } = await request(app)
-      .get("/api/users/dav3rid/reviews")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(200);
-
-    expect(body.reviews).toHaveLength(0);
-  });
-  it("400: Returns an error if passed a non-integer limit or p", async () => {
-    await request(app)
-      .get("/api/users/dav3rid/reviews?limit=not_a_number")
-      .set("Authorization", `Bearer ${token}`)
-      .expect(400);
-  });
-  it("404: Returns an error if passed a non-existent user", async () => {
-    await request(app)
-      .get("/api/users/not_a_user/reviews")
       .set("Authorization", `Bearer ${token}`)
       .expect(404);
   });
