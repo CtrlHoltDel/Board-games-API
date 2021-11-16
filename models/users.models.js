@@ -90,7 +90,9 @@ exports.fetchUserComments = async (username, queries) => {
     [username, limit, p]
   );
 
-  return rows;
+  const count = await pullCount("author", "comments", "author", username);
+
+  return { comments: rows, count };
 };
 
 exports.addUser = async (queries) => {

@@ -1238,7 +1238,7 @@ describe("/api/users/:username/likes/:review_id", () => {
   });
 });
 
-describe("/api/users/:username/comments", () => {
+describe.only("/api/users/:username/comments", () => {
   it("200: Returns a list of all comments made by a specific user", async () => {
     const { body } = await request(app)
       .get("/api/users/bainesface/comments")
@@ -1246,6 +1246,7 @@ describe("/api/users/:username/comments", () => {
       .expect(200);
 
     expect(body.comments).toHaveLength(2);
+    expect(body.count).toBe(2);
   });
   it("200: Returns an empty array if user does exist but has no related comments", async () => {
     const { body } = await request(app)
