@@ -946,7 +946,6 @@ describe("/api/users", () => {
           username: "test_user",
           avatar_url: "http://image.com/image",
           name: "test_name",
-          email: "new_email@gmail.com",
         })
         .expect(201);
 
@@ -954,7 +953,7 @@ describe("/api/users", () => {
         username: "test_user",
         avatar_url: "http://image.com/image",
         name: "test_name",
-        email: "new_email@gmail.com",
+
         created: expect.any(String),
       });
 
@@ -972,7 +971,6 @@ describe("/api/users", () => {
           username: "test_user",
           avatar_url: "http://image.com/image",
           name: "test_name",
-          email: "new_email@gmail.com",
           surplus_keys: "Ignores me",
         })
         .expect(201);
@@ -981,7 +979,7 @@ describe("/api/users", () => {
         username: "test_user",
         avatar_url: "http://image.com/image",
         name: "test_name",
-        email: "new_email@gmail.com",
+
         created: expect.any(String),
       });
     });
@@ -991,7 +989,6 @@ describe("/api/users", () => {
         .send({
           username: "test_user",
           name: "test_name",
-          email: "new_email@gmail.com",
         })
         .expect(201);
 
@@ -1000,7 +997,7 @@ describe("/api/users", () => {
         avatar_url:
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "test_name",
-        email: "new_email@gmail.com",
+
         created: expect.any(String),
       });
 
@@ -1009,7 +1006,6 @@ describe("/api/users", () => {
 
         .send({
           username: "test_user2",
-          email: "new_email@gmail.com2",
         })
         .expect(201);
 
@@ -1018,7 +1014,7 @@ describe("/api/users", () => {
         avatar_url:
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "Anon",
-        email: "new_email@gmail.com2",
+
         created: expect.any(String),
       });
     });
@@ -1030,7 +1026,6 @@ describe("/api/users", () => {
           incorrect_body: "test_user",
           avatar_url: "http://image.com/image",
           name: "test_name",
-          email: "new_email@gmail.com",
         })
         .expect(400);
       expect(body.error.message).toBe("Invalid body");
@@ -1042,37 +1037,23 @@ describe("/api/users", () => {
           username: "test_user",
           avatar_url: 12,
           name: "test_name",
-          email: "new_email@gmail.com",
         })
         .expect(400);
 
       expect(invalidType.body.error.message).toBe("Invalid body");
     });
-    it("400: Returns an error if the username or email already exists", async () => {
+    it("400: Returns an error if the username already exists", async () => {
       const { body } = await request(app)
         .post("/api/users")
 
         .send({
           username: "mallionaire",
           avatar_url: "http://image.com/image",
-          email: "new_email@gmail.com",
           name: "test_name",
         })
         .expect(400);
 
       expect(body.message).toBe("Username already exists");
-
-      const result = await request(app)
-        .post("/api/users")
-
-        .send({
-          username: "new_user",
-          avatar_url: "http://image.com/image",
-          email: "7not.foun@codb.site",
-          name: "test_name",
-        });
-
-      expect(result.body.message).toBe("Email already exists");
     });
   });
 });
@@ -1089,7 +1070,7 @@ describe("/api/users/:username", () => {
         avatar_url:
           "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
         name: "haz",
-        email: "7not.foun@codb.site",
+
         likes: 1,
         comments: 2,
         reviews: 11,
@@ -1112,14 +1093,13 @@ describe("/api/users/:username", () => {
         .expect(201)
         .send({
           avatar_url: "http://image.com/new_url",
-          email: "new@email.com",
+
           name: "name_change",
         });
 
       expect(body.user[0]).toMatchObject({
         username: "bainesface",
         avatar_url: "http://image.com/new_url",
-        email: "new@email.com",
         name: "name_change",
       });
     });
@@ -1130,7 +1110,7 @@ describe("/api/users/:username", () => {
         .expect(400)
         .send({
           avatar_url_incorrect: "http://image.com/new_url",
-          email: "new@email.com",
+
           name: "name_change",
         });
 
@@ -1143,7 +1123,6 @@ describe("/api/users/:username", () => {
         .expect(404)
         .send({
           avatar_url: "http://image.com/new_url",
-          email: "new@email.com",
           name: "name_change",
         });
     });

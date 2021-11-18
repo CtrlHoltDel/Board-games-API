@@ -101,18 +101,17 @@ exports.fetchUserComments = async (username, queries) => {
 };
 
 exports.addUser = async (queries) => {
-  const { username, avatar_url = "", name = "", email } = queries;
+  const { username, avatar_url = "", name = "" } = queries;
 
   await validateBody(
-    { username, avatar_url, name, email },
+    { username, avatar_url, name },
     ["username", "string"],
     ["avatar_url", "string"],
-    ["name", "string"],
-    ["email", "string"]
+    ["name", "string"]
   );
 
-  const rows = ["username", "email"];
-  const values = [username, email];
+  const rows = ["username"];
+  const values = [username];
 
   if (avatar_url) {
     rows.push("avatar_url");
@@ -131,25 +130,15 @@ exports.addUser = async (queries) => {
 
 exports.amendUser = async (username, body) => {
   await validateUser(username);
-  await validateBody(
-    body,
-    ["avatar_url", "string"],
-    ["email", "string"],
-    ["name", "string"]
-  );
-  const { avatar_url, email, name } = body;
+  await validateBody(body, ["avatar_url", "string"], ["name", "string"]);
+  const { avatar_url, name } = body;
   const queryBody = `
     UPDATE users
-    SET avatar_url = $1, name = $2, email = $3
-    WHERE username = $4 RETURNING *
+    SET avatar_url = $1, name = $2
+    WHERE username = $3 RETURNING *
     `;
 
-  const { rows } = await db.query(queryBody, [
-    avatar_url,
-    name,
-    email,
-    username,
-  ]);
+  const { rows } = await db.query(queryBody, [avatar_url, name, username]);
 
   return rows;
 };

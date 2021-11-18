@@ -132,7 +132,6 @@ exports.endPoints = {
         avatar_url:
           "https://www.tumbit.com/profile-image/4/original/mr-grumpy.jpg",
         name: "Paul Grump",
-        email: "idej@ratnariantiarno.art",
       },
     },
   },
@@ -142,7 +141,6 @@ exports.endPoints = {
       username: "test_user",
       avatar_url: "http://image.com/image",
       name: "test_name",
-      email: "new_email@gmail.com",
     },
   },
   "GET /api/users/:username": {
@@ -154,7 +152,6 @@ exports.endPoints = {
         avatar_url:
           "https://vignette1.wikia.nocookie.net/mrmen/images/7/7f/Mr_Happy.jpg/revision/latest?cb=20140102171729",
         name: "Amy Happy",
-        email: "5jonatha_luizo@3kk43.com",
       },
     },
   },
@@ -162,7 +159,6 @@ exports.endPoints = {
     description: "Modifies the user specified in the endpoint",
     "example body": {
       avatar_url: "http://image.com/new_url",
-      email: "new@email.com",
       name: "name_change",
     },
   },
