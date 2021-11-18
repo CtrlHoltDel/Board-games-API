@@ -1,5 +1,5 @@
-const format = require('pg-format');
-const db = require('../db/connection');
+const format = require("pg-format");
+const db = require("../db/connection");
 
 exports.pullCount = async (select, table, column, criteria) => {
   const queryBody = format(
@@ -83,6 +83,5 @@ exports.updateBody = async (table, cell, body, column, criteria) => {
 
 exports.deleteFromDb = async (table, column, id) => {
   const queryBody = format(`DELETE FROM %I WHERE %I = $1`, table, column);
-
   await db.query(queryBody, [id]);
 };

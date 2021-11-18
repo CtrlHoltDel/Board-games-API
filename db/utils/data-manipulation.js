@@ -1,17 +1,17 @@
 exports.pgFormatFriendly = (objects, type) => {
   const returnArray = [];
 
-  if (type === 'categories') {
+  if (type === "categories") {
     objects.forEach((object) => {
       const { slug, description } = object;
       returnArray.push([slug, description]);
     });
-  } else if (type === 'comments') {
+  } else if (type === "comments") {
     objects.forEach((object) => {
       const { body, votes, author, review_id, created_at } = object;
       returnArray.push([body, votes, author, review_id, created_at]);
     });
-  } else if (type === 'reviews') {
+  } else if (type === "reviews") {
     objects.forEach((object) => {
       const {
         title,
@@ -34,12 +34,12 @@ exports.pgFormatFriendly = (objects, type) => {
         votes,
       ]);
     });
-  } else if (type === 'users') {
+  } else if (type === "users") {
     objects.forEach((object) => {
-      const { username, name, avatar_url, email } = object;
-      returnArray.push([username, name, avatar_url, email]);
+      const { username, name, avatar_url, email, created } = object;
+      returnArray.push([username, name, avatar_url, email, created]);
     });
-  } else if (type === 'review_likes') {
+  } else if (type === "review_likes") {
     objects.forEach((object) => {
       const { username, review_id, liked_at } = object;
       returnArray.push([username, review_id, liked_at]);

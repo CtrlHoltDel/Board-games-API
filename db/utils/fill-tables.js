@@ -1,6 +1,6 @@
-const db = require('../connection');
-const format = require('pg-format');
-const { pgFormatFriendly } = require('./data-manipulation');
+const db = require("../connection");
+const format = require("pg-format");
+const { pgFormatFriendly } = require("./data-manipulation");
 
 exports.fillTables = async ({
   categoryData,
@@ -19,39 +19,43 @@ exports.fillTables = async ({
   };
 
   await db.query(
-    insertData('categories', ['slug', 'description'], categoryData)
-  );
-  await db.query(
-    insertData('users', ['username', 'name', 'avatar_url', 'email'], userData)
+    insertData("categories", ["slug", "description"], categoryData)
   );
   await db.query(
     insertData(
-      'reviews',
+      "users",
+      ["username", "name", "avatar_url", "email", "created"],
+      userData
+    )
+  );
+  await db.query(
+    insertData(
+      "reviews",
       [
-        'title',
-        'designer',
-        'owner',
-        'review_img_url',
-        'review_body',
-        'category',
-        'created_at',
-        'votes',
+        "title",
+        "designer",
+        "owner",
+        "review_img_url",
+        "review_body",
+        "category",
+        "created_at",
+        "votes",
       ],
       reviewData
     )
   );
   await db.query(
     insertData(
-      'comments',
-      ['body', 'votes', 'author', 'review_id', 'created_at'],
+      "comments",
+      ["body", "votes", "author", "review_id", "created_at"],
       commentData
     )
   );
 
   await db.query(
     insertData(
-      'review_likes',
-      ['username', 'review_id', 'liked_at'],
+      "review_likes",
+      ["username", "review_id", "liked_at"],
       userLikesData
     )
   );

@@ -5,8 +5,6 @@ const request = require("supertest");
 const testData = require("../db/data/test-data/index.js");
 const seed = require("../db/seeds/seed.js");
 
-let token;
-
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
@@ -897,11 +895,12 @@ describe("/api/comments/:comment_id/edit", () => {
 
 describe("/api/users", () => {
   describe("GET", () => {
-    it("200: Returns an array with a full list of users", async () => {
+    it("200: Returns an array with a full list of users in order of creation.", async () => {
       const { body } = await request(app).get("/api/users").expect(200);
 
       expect(body.users).toHaveLength(4);
       expect(body.count).toBe("4");
+      expect(body.users[0].username).toBe("philippaclaire9");
     });
     it("200: Works with a search query", async () => {
       const { body } = await request(app)
@@ -911,6 +910,14 @@ describe("/api/users", () => {
       expect(body.users).toHaveLength(1);
       expect(body.count).toBe("1");
     });
+    it("200: Works with asc/desc queries", async () => {
+      const { body } = await request(app)
+        .get("/api/users?order=asc")
+        .expect(200);
+
+      expect(body.users).toHaveLength(4);
+      expect(body.users[0].username).toBe("bainesface");
+    });
     it("200: Works with pagination", async () => {
       const { body } = await request(app)
         .get("/api/users?limit=2&p=2")
@@ -918,6 +925,9 @@ describe("/api/users", () => {
         .expect(200);
 
       expect(body.users).toHaveLength(2);
+    });
+    it("400: Returns an error if passed an invalid order query value", async () => {
+      await request(app).get("/api/users?order=incorrect-query").expect(400);
     });
     it("400: Returns an error if passed a non-integer to limit or p", async () => {
       const { body } = await request(app)
@@ -940,11 +950,12 @@ describe("/api/users", () => {
         })
         .expect(201);
 
-      expect(body.user).toEqual({
+      expect(body.user).toMatchObject({
         username: "test_user",
         avatar_url: "http://image.com/image",
         name: "test_name",
         email: "new_email@gmail.com",
+        created: expect.any(String),
       });
 
       const { rows } = await db.query(
@@ -971,6 +982,7 @@ describe("/api/users", () => {
         avatar_url: "http://image.com/image",
         name: "test_name",
         email: "new_email@gmail.com",
+        created: expect.any(String),
       });
     });
     it("200: Ignores missing avatar or name key", async () => {
@@ -989,6 +1001,7 @@ describe("/api/users", () => {
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "test_name",
         email: "new_email@gmail.com",
+        created: expect.any(String),
       });
 
       const response = await request(app)
@@ -1006,6 +1019,7 @@ describe("/api/users", () => {
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "Anon",
         email: "new_email@gmail.com2",
+        created: expect.any(String),
       });
     });
     it("400: Returns an error if the body is incorrect", async () => {
@@ -1079,6 +1093,7 @@ describe("/api/users/:username", () => {
         likes: 1,
         comments: 2,
         reviews: 11,
+        created: expect.any(String),
       });
     });
     it("404: Responds with an error if username doesn't relate to a user", async () => {
@@ -1178,16 +1193,19 @@ describe("/api/users/:username/likes", () => {
     it("400: Returns an error if passed a non-integer limit or p", async () => {
       const { body } = await request(app)
         .get("/api/users/bainesface/likes?limit=not_an_integer")
-
         .expect(400);
 
       expect(body.error.message).toBe("Invalid query");
       const res = await request(app)
         .get("/api/users/bainesface/likes?limit=1&p=not_an_integer")
-
         .expect(400);
 
       expect(res.body.error.message).toBe("Invalid query");
+    });
+    it("400: Returns an error if passed an invalid order query", async () => {
+      await request(app)
+        .get("/api/users/bainesface/likes?order=invalid_query")
+        .expect(400);
     });
     it("404: Responds with an error if the username doesn't relate to a user", async () => {
       const { body } = await request(app)

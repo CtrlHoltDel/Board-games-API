@@ -18,7 +18,8 @@ exports.createTables = async () => {
     username VARCHAR PRIMARY KEY,
     avatar_url VARCHAR(255) DEFAULT 'https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=',
     name VARCHAR DEFAULT 'Anon',
-    email VARCHAR(50) UNIQUE
+    email VARCHAR(50) UNIQUE,
+    created TIMESTAMP DEFAULT NOW() NOT NULL
   );`;
 
   const reviews = `CREATE TABLE reviews (

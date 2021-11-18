@@ -8,14 +8,17 @@ const {
   validateUser,
   validateReview,
   checkId,
+  validateQueryValues,
+  validateOrder,
 } = require("../utils/validation");
 
 exports.fetchUsers = async (query) => {
-  let { limit = 10, p = 0, search = "%%" } = query;
+  let { limit = 10, p = 0, search = "%%", order = "desc" } = query;
 
   if (+p) p = limit * (p - 1);
 
   await validatePagination(limit, p);
+  await validateOrder(order);
 
   const { rows } = await db.query(
     `SELECT COUNT(username) FROM users WHERE username iLike $1;`,
@@ -23,7 +26,7 @@ exports.fetchUsers = async (query) => {
   );
 
   const { rows: users } = await db.query(
-    "SELECT * FROM users WHERE username iLIKE $1 LIMIT $2 OFFSET $3",
+    `SELECT * FROM users WHERE username iLIKE $1 ORDER BY created ${order} LIMIT $2 OFFSET $3`,
     [`%${search}%`, limit, p]
   );
 
@@ -52,6 +55,7 @@ exports.fetchUserLikes = async (username, queries) => {
   let { order = "desc", limit = 10, p = 0 } = queries;
 
   await validatePagination(limit, p);
+  await validateOrder(order);
   await validateUser(username);
 
   if (+p) p = limit * (p - 1);

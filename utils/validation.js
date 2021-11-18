@@ -33,15 +33,21 @@ exports.validatePagination = (limit, p) => {
   }
 };
 
+exports.validateOrder = (order = "desc") => {
+  const validOrder = ["asc", "ASC", "desc", "DESC"];
+  if (!validOrder.includes(order)) {
+    return Promise.reject({ status: 400, message: "Invalid query" });
+  }
+};
+
 exports.validateQueryValues = async (
   { sort_by = "votes", order = "desc", limit = 10, p = 0 },
   validColumns
 ) => {
-  const validOrder = ["asc", "ASC", "desc", "DESC"];
-
   await this.validatePagination(limit, p);
+  await this.validateOrder(order);
 
-  if (!validColumns.includes(sort_by) || !validOrder.includes(order)) {
+  if (!validColumns.includes(sort_by)) {
     return Promise.reject({ status: 400, message: "Invalid query" });
   }
 };
