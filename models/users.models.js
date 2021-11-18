@@ -1,11 +1,6 @@
 const format = require("pg-format");
 const db = require("../db/connection");
-const {
-  pullAllData,
-  pullList,
-  insertItem,
-  pullCount,
-} = require("../utils/utils");
+const { pullList, insertItem, pullCount } = require("../utils/utils");
 const {
   validateBody,
 
@@ -16,18 +11,23 @@ const {
 } = require("../utils/validation");
 
 exports.fetchUsers = async (query) => {
-  let { limit = 10, p = 0 } = query;
+  let { limit = 10, p = 0, search = "%%" } = query;
 
   if (+p) p = limit * (p - 1);
 
-  const { rows } = await db.query(`SELECT COUNT(username) FROM users;`);
-
-  const count = rows[0].count;
-
   await validatePagination(limit, p);
 
-  const users = await pullAllData("users", limit, p);
-  return { users, count };
+  const { rows } = await db.query(
+    `SELECT COUNT(username) FROM users WHERE username iLike $1;`,
+    [`%${search}%`]
+  );
+
+  const { rows: users } = await db.query(
+    "SELECT * FROM users WHERE username iLIKE $1 LIMIT $2 OFFSET $3",
+    [`%${search}%`, limit, p]
+  );
+
+  return { users, count: rows[0].count };
 };
 
 exports.fetchUser = async (username) => {
@@ -90,8 +90,6 @@ exports.fetchUserComments = async (username, queries) => {
 
     [username, limit, p]
   );
-
-  console.log(rows);
 
   const count = await pullCount("author", "comments", "author", username);
 

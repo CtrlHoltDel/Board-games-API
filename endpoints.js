@@ -166,6 +166,9 @@ exports.endPoints = {
       name: "name_change",
     },
   },
+  "DEL /api/users/:username": {
+    descritpion: "Deletes the user specified in the endpoint",
+  },
   "GET /api/users/:username/likes": {
     description:
       "Serves a list of all reviews liked by the user specified in the endpoint",
