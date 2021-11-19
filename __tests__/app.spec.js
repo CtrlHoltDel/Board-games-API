@@ -946,6 +946,7 @@ describe("/api/users", () => {
           username: "test_user",
           avatar_url: "http://image.com/image",
           name: "test_name",
+          id: "firebaseId",
         })
         .expect(201);
 
@@ -971,6 +972,7 @@ describe("/api/users", () => {
           username: "test_user",
           avatar_url: "http://image.com/image",
           name: "test_name",
+          id: "firebaseId",
           surplus_keys: "Ignores me",
         })
         .expect(201);
@@ -979,7 +981,7 @@ describe("/api/users", () => {
         username: "test_user",
         avatar_url: "http://image.com/image",
         name: "test_name",
-
+        id: "firebaseId",
         created: expect.any(String),
       });
     });
@@ -989,6 +991,7 @@ describe("/api/users", () => {
         .send({
           username: "test_user",
           name: "test_name",
+          id: "firebaseId",
         })
         .expect(201);
 
@@ -997,6 +1000,7 @@ describe("/api/users", () => {
         avatar_url:
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "test_name",
+        id: "firebaseId",
 
         created: expect.any(String),
       });
@@ -1006,6 +1010,7 @@ describe("/api/users", () => {
 
         .send({
           username: "test_user2",
+          id: "firebaseId",
         })
         .expect(201);
 
@@ -1014,7 +1019,7 @@ describe("/api/users", () => {
         avatar_url:
           "https://media.istockphoto.com/vectors/default-placeholder-profile-icon-vector-id666545148?k=6&m=666545148&s=170667a&w=0&h=ycJvJHz6ZMWsErum0XpjVabgZsP8dib2feSIJ5dIWYk=",
         name: "Anon",
-
+        id: "firebaseId",
         created: expect.any(String),
       });
     });
@@ -1063,14 +1068,13 @@ describe("/api/users/:username", () => {
     it("200: Responds with a single user object", async () => {
       const { body } = await request(app)
         .get("/api/users/mallionaire")
-
         .expect(200);
       expect(body.user).toEqual({
         username: "mallionaire",
         avatar_url:
           "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
         name: "haz",
-
+        id: "2jCBTjGgqKdPwkIftqfEVAjALBD3",
         likes: 1,
         comments: 2,
         reviews: 11,
@@ -1085,15 +1089,13 @@ describe("/api/users/:username", () => {
       expect(body.error.message).toBe("Non-existent user");
     });
   });
-  describe("PATCH", () => {
+  describe.only("PATCH", () => {
     it("201: Updates the user when passed the correct params", async () => {
       const { body } = await request(app)
         .patch("/api/users/bainesface")
-
         .expect(201)
         .send({
           avatar_url: "http://image.com/new_url",
-
           name: "name_change",
         });
 
@@ -1101,6 +1103,7 @@ describe("/api/users/:username", () => {
         username: "bainesface",
         avatar_url: "http://image.com/new_url",
         name: "name_change",
+        id: expect.any(String),
       });
     });
     it("400: Returns an error if passed an invalid body", async () => {
@@ -1110,7 +1113,6 @@ describe("/api/users/:username", () => {
         .expect(400)
         .send({
           avatar_url_incorrect: "http://image.com/new_url",
-
           name: "name_change",
         });
 

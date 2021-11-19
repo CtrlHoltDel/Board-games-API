@@ -115,6 +115,7 @@ describe("Seed tests", () => {
             "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
           username: "bainesface",
           created: new Date(1511354613389),
+          id: "thisisauniqueid",
         },
       ];
       const expectedResult = [
@@ -123,6 +124,7 @@ describe("Seed tests", () => {
           "sarah",
           "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",
           new Date(1511354613389),
+          "thisisauniqueid",
         ],
       ];
       expect(pgFormatFriendly(testData, "users")).toEqual(expectedResult);

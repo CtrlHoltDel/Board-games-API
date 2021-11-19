@@ -101,7 +101,7 @@ exports.fetchUserComments = async (username, queries) => {
 };
 
 exports.addUser = async (queries) => {
-  const { username, avatar_url = "", name = "" } = queries;
+  const { username, avatar_url = "", name = "", id = "" } = queries;
 
   await validateBody(
     { username, avatar_url, name },
@@ -110,8 +110,8 @@ exports.addUser = async (queries) => {
     ["name", "string"]
   );
 
-  const rows = ["username"];
-  const values = [username];
+  const rows = ["username", "id"];
+  const values = [username, id];
 
   if (avatar_url) {
     rows.push("avatar_url");
