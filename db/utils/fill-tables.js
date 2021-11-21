@@ -8,6 +8,7 @@ exports.fillTables = async ({
   reviewData,
   userData,
   userLikesData,
+  reviewVotesData,
 }) => {
   const insertData = (table, categories, data) => {
     return format(
@@ -57,6 +58,14 @@ exports.fillTables = async ({
       "review_likes",
       ["username", "review_id", "liked_at"],
       userLikesData
+    )
+  );
+
+  await db.query(
+    insertData(
+      "review_votes",
+      ["username", "review_id", "vote_status"],
+      reviewVotesData
     )
   );
 };

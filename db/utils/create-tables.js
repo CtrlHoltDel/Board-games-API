@@ -1,7 +1,14 @@
 const db = require("../connection");
 
 exports.dropTables = async () => {
-  const tables = ["review_likes", "comments", "reviews", "categories", "users"];
+  const tables = [
+    "review_likes",
+    "review_votes",
+    "comments",
+    "reviews",
+    "categories",
+    "users",
+  ];
 
   for (let i = 0; i < tables.length; i++) {
     await db.query(`DROP TABLE IF EXISTS ${tables[i]};`);
@@ -53,7 +60,24 @@ exports.createTables = async () => {
   ALTER TABLE review_likes
   ADD CONSTRAINT unique_user_like UNIQUE (username, review_id)`;
 
-  const tables = [categories, users, reviews, comments, reviewLikes];
+  const reviewVotes = `CREATE TABLE review_votes (
+    rv_key SERIAL PRIMARY KEY,
+    username VARCHAR REFERENCES users(username) ON DELETE CASCADE NOT NULL,
+    review_id INT REFERENCES reviews(review_id) ON DELETE CASCADE NOT NULL,
+    vote_status INT DEFAULT 0
+  );
+  
+  ALTER TABLE review_votes
+  ADD CONSTRAINT unique_user_vote UNIQUE (username, review_id)`;
+
+  const tables = [
+    categories,
+    users,
+    reviews,
+    reviewVotes,
+    comments,
+    reviewLikes,
+  ];
 
   for (let i = 0; i < tables.length; i++) {
     await db.query(tables[i]);
