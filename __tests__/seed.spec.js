@@ -150,5 +150,18 @@ describe("Seed tests", () => {
         expectedResult
       );
     });
+    it("Review_votes", () => {
+      const testData = [
+        {
+          username: "bainesface",
+          vote_status: -1,
+          review_id: 2,
+        },
+      ];
+      const expectedResult = [["bainesface", 2, -1]];
+      expect(pgFormatFriendly(testData, "review_votes")).toEqual(
+        expectedResult
+      );
+    });
   });
 });

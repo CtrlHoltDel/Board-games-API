@@ -7,7 +7,7 @@ const {
   fetchUserComments,
   fetchUserReviews,
   removeUser,
-  fetchUserLikeByReview,
+  fetchUserInteractionByReview,
 } = require("../models/users.models");
 
 exports.getUsers = async (req, res, next) => {
@@ -87,11 +87,11 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
-exports.getUserLikeByReview = async (req, res, next) => {
+exports.getUserInteractionByReview = async (req, res, next) => {
   const { username, review_id } = req.params;
 
   try {
-    const liked = await fetchUserLikeByReview(username, review_id);
+    const liked = await fetchUserInteractionByReview(username, review_id);
     res.status(200).send(liked);
   } catch (err) {
     next(err);

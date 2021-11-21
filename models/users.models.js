@@ -148,7 +148,7 @@ exports.removeUser = async (username) => {
   await db.query(queryBody);
 };
 
-exports.fetchUserLikeByReview = async (username, reviewId) => {
+exports.fetchUserInteractionByReview = async (username, reviewId) => {
   await checkId(reviewId);
   await validateUser(username);
   await validateReview(reviewId);
@@ -158,5 +158,12 @@ exports.fetchUserLikeByReview = async (username, reviewId) => {
     [username, reviewId]
   );
 
-  return !rows.length ? { liked: false } : { liked: true };
+  const { rows: votedResult } = await db.query(
+    `SELECT * FROM review_votes WHERE username = $1 AND review_id = $2`,
+    [username, reviewId]
+  );
+
+  let voted = !votedResult[0] ? 0 : votedResult[0].vote_status;
+
+  return { liked: !!rows.length, voted };
 };

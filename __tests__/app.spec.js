@@ -343,26 +343,95 @@ describe("/api/reviews/:review_id", () => {
   describe("PATCH", () => {
     it("200: Responds with the updated review object", async () => {
       const { body: increase } = await request(app)
-        .patch("/api/reviews/2")
-
-        .send({ inc_votes: 1 })
+        .patch("/api/reviews/5")
+        .send({ inc_votes: 1, username: "mallionaire" })
         .expect(200);
 
       expect(increase.review.votes).toBe(6);
 
       const { body: decrease } = await request(app)
         .patch("/api/reviews/2")
-
-        .send({ inc_votes: -5 })
+        .send({ inc_votes: -1, username: "mallionaire" })
         .expect(200);
 
-      expect(decrease.review.votes).toBe(1);
+      expect(decrease.review.votes).toBe(4);
+    });
+
+    it("200: Updates the junction table if no review vote currently exists", async () => {
+      const { body } = await request(app)
+        .patch("/api/reviews/4")
+        .send({ inc_votes: 1, username: "mallionaire" })
+        .expect(200);
+
+      expect(body.review.votes).toBe(8);
+
+      const { rows } = await db.query(
+        "SELECT * FROM review_votes WHERE username = 'mallionaire' AND review_id = 2"
+      );
+
+      expect(rows[0]).toMatchObject({
+        rv_key: expect.any(Number),
+        username: "mallionaire",
+        review_id: 2,
+        vote_status: 1,
+      });
+    });
+
+    it("200: Amends both the junction table and review amount if a user has already voted", async () => {
+      const { body: initial } = await request(app)
+        .patch("/api/reviews/1")
+        .send({ inc_votes: -1, username: "bainesface" })
+        .expect(200);
+
+      const { rows } = await db.query(
+        "SELECT * FROM review_votes WHERE username = 'bainesface' AND review_id = 1"
+      );
+
+      expect(initial.review.votes).toBe(0);
+
+      expect(rows[0]).toBeUndefined();
+    });
+
+    it("400: Responds with an error if trying to increase a vote that a user has already increased", async () => {
+      const { rows: initial } = await db.query(
+        "SELECT * FROM reviews WHERE review_id = 1"
+      );
+
+      const { body } = await request(app)
+        .patch("/api/reviews/1")
+        .send({ inc_votes: 1, username: "bainesface" })
+        .expect(400);
+
+      const { rows: after } = await db.query(
+        "SELECT * FROM reviews WHERE review_id = 1"
+      );
+
+      expect(initial[0].votes).toBe(1);
+
+      expect(body.error.message).toBe("Can't increase vote by more than one");
+
+      expect(after[0].votes).toBe(1);
+    });
+    it("400: Responds with an error if trying to amend the vote by more than 1", async () => {
+      const { body } = await request(app)
+        .patch("/api/reviews/2")
+        .send({ inc_votes: 23, username: "mallionaire" })
+        .expect(400);
+
+      expect(body.error.message).toBe("Invalid vote amount");
+
+      const { body: decrease } = await request(app)
+        .patch("/api/reviews/2")
+        .send({ inc_votes: -4, username: "mallionaire" })
+        .expect(400);
+
+      expect(body.error.message).toBe("Invalid vote amount");
     });
     it("400: Responds with an error if passed an id that isn't an integer", async () => {
       const { body } = await request(app)
         .patch("/api/reviews/not_an_integer")
 
-        .send({ inc_votes: 1 })
+        .send({ inc_votes: 1, username: "mallionaire" })
         .expect(400);
 
       expect(body.error.message).toBe("Bad request");
@@ -372,8 +441,7 @@ describe("/api/reviews/:review_id", () => {
         body: { error },
       } = await request(app)
         .patch("/api/reviews/3")
-
-        .send({ incorrect_body: 1 })
+        .send({ incorrect_body: 1, username: "mallionaire" })
         .expect(400);
 
       expect(error.message).toBe("Invalid body");
@@ -382,8 +450,7 @@ describe("/api/reviews/:review_id", () => {
         body: { incorrectValue = error },
       } = await request(app)
         .patch("/api/reviews/3")
-
-        .send({ inc_votes: "incorrect value" })
+        .send({ inc_votes: "incorrect value", username: "mallionaire" })
         .expect(400);
 
       expect(incorrectValue.message).toBe("Invalid body");
@@ -392,17 +459,27 @@ describe("/api/reviews/:review_id", () => {
         body: { extraKey = error },
       } = await request(app)
         .patch("/api/reviews/3")
-
-        .send({ inc_votes: 1, surplus_key: "this is an extra key" })
+        .send({
+          inc_votes: 1,
+          surplus_key: "this is an extra key",
+          username: "mallionaire",
+        })
         .expect(400);
 
       expect(extraKey.message).toBe("Invalid body");
+    });
+
+    it("404: Responds with an error if passed an invalid user", async () => {
+      const { body } = request(app)
+        .patch("/api/reviews/3")
+        .send({ inc_votes: 1, username: "invalid_user" })
+        .expect(404);
     });
     it("404: Responds with an error if passed an id that doesn't relate to a review", async () => {
       const { body } = await request(app)
         .patch("/api/reviews/923897")
 
-        .send({ inc_votes: 1 })
+        .send({ inc_votes: 1, username: "mallionaire" })
         .expect(404);
 
       expect(body.error.message).toBe("Non-existent review");
@@ -1089,7 +1166,7 @@ describe("/api/users/:username", () => {
       expect(body.error.message).toBe("Non-existent user");
     });
   });
-  describe.only("PATCH", () => {
+  describe("PATCH", () => {
     it("201: Updates the user when passed the correct params", async () => {
       const { body } = await request(app)
         .patch("/api/users/bainesface")
@@ -1199,30 +1276,40 @@ describe("/api/users/:username/likes", () => {
   });
 });
 
-describe("/api/users/:username/likes/:review_id", () => {
+describe.only("/api/users/:username/interaction/:review_id", () => {
   describe("GET", () => {
     it("200: Returns an object containing a boolean depending on if a user has liked a comment.", async () => {
-      const { body: truthy } = await request(app)
-        .get("/api/users/bainesface/likes/11")
+      const {
+        body: { liked, voted },
+      } = await request(app)
+        .get("/api/users/bainesface/interaction/11")
         .expect(200);
 
-      expect(truthy.liked).toBeTruthy();
+      expect(liked).toBeTruthy();
+      expect(voted).toBe(0);
 
-      const { body: falsy } = await request(app)
-        .get("/api/users/bainesface/likes/1")
+      const {
+        body: { liked: liked2, voted: voted2 },
+      } = await request(app)
+        .get("/api/users/bainesface/interaction/1")
         .expect(200);
 
-      expect(falsy.liked).toBeFalsy();
+      expect(liked2).toBeFalsy();
+      expect(voted2).toBe(1);
     });
     it("404: Returns an error if passed a non-existent user", async () => {
-      await request(app).get("/api/users/not_a_user/likes/22").expect(404);
+      await request(app)
+        .get("/api/users/not_a_user/interaction/22")
+        .expect(404);
     });
     it("404: Returns an error if passed an id that doesn't relate to a review", async () => {
-      await request(app).get("/api/users/bainesface/likes/23938").expect(404);
+      await request(app)
+        .get("/api/users/bainesface/interaction/23938")
+        .expect(404);
     });
     it("400: Returns an error if passed a non-numeric review_id", async () => {
       await request(app)
-        .get("/api/users/bainesface/likes/not_a_number")
+        .get("/api/users/bainesface/interaction/not_a_number")
         .expect(400);
     });
   });

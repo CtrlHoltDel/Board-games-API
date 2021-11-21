@@ -126,17 +126,48 @@ exports.fetchReviews = async (queries) => {
   return { reviews, count: rows[0].review_count };
 };
 
-exports.amendReviewVote = async (votes, reviewId) => {
+exports.amendReviewVote = async (body, reviewId) => {
   await checkId(reviewId);
-  await validateBody(votes, ["inc_votes", "number"]);
+  await validateUser(body.username);
+  await validateReview(reviewId);
+  await validateBody(body, ["inc_votes", "number"], ["username", "string"]);
 
-  const { inc_votes } = votes;
+  const { inc_votes, username } = body;
+
+  if (inc_votes !== -1 && inc_votes !== 1) {
+    return Promise.reject({ status: 400, message: "Invalid vote amount" });
+  }
+
+  const { rows } = await db.query(
+    "SELECT * FROM review_votes WHERE username = $1 AND review_id = $2",
+    [username, reviewId]
+  );
+
+  if (rows.length) {
+    if (rows[0].vote_status + inc_votes === 0) {
+      await db.query(
+        "DELETE FROM review_votes WHERE username = $1 AND review_id = $2",
+        [username, reviewId]
+      );
+    } else {
+      return Promise.reject({
+        status: 400,
+        message: `Can't ${
+          inc_votes === 1 ? "increase" : "decrease"
+        } vote by more than one`,
+      });
+    }
+  } else {
+    insertItem(
+      "review_votes",
+      ["username", "review_id", "vote_status"],
+      [username, reviewId, inc_votes]
+    );
+  }
 
   const review = await updateVote("reviews", inc_votes, "review_id", reviewId);
 
-  return review
-    ? review
-    : Promise.reject({ status: 404, message: "Non-existent review" });
+  return review;
 };
 
 exports.fetchReviewComments = async (reviewId, query) => {
