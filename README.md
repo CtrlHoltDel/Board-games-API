@@ -10,7 +10,7 @@ This API is built using the back end portion of the PERN stack.
 
 | Technologies |                                Description                                 |
 | :----------- | :------------------------------------------------------------------------: |
-| Node.js      | Javascript runtime which our API is built upon. Lightweight and efficient. |
+| Node.js      | Javascript runtime which the API is built upon. Lightweight and efficient. |
 | PosgresQL    |                 An relational database management system.                  |
 | Express.js   |              A web application framework built upon node.js.               |
 
